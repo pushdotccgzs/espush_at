@@ -13,7 +13,7 @@
 #include "at_custom.h"
 #include "user_interface.h"
 #include "at_push.h"
-
+#include "driver/uart.h"
 
 at_funcationType at_custom_cmd[] = {
 	{"+PUSH", 5, NULL, at_queryCmdPushStatus, at_setupCmdPushRegist, NULL},
@@ -27,11 +27,12 @@ void ICACHE_FLASH_ATTR user_rf_pre_init(void)
 
 void ICACHE_FLASH_ATTR user_init(void)
 {
-    char buf[64] = {0};
+	uart_init(BIT_RATE_115200, BIT_RATE_115200);
+
+    char* ver = "AT-PUSH v0.1";
     at_customLinkMax = 5;
     at_init();
-    os_sprintf(buf,"compile time:%s %s",__DATE__,__TIME__);
-    at_set_custom_info(buf);
+    at_set_custom_info(ver);
     at_port_print("\r\nready\r\n");
     at_cmd_array_regist(&at_custom_cmd[0], sizeof(at_custom_cmd)/sizeof(at_custom_cmd[0]));
 }
