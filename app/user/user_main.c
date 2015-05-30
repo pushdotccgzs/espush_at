@@ -21,11 +21,11 @@ at_funcationType at_custom_cmd[] = {
 	{"+PUSHCLOSE", 10, NULL, NULL, NULL, at_execUnPushRegist},
 };
 
-void user_rf_pre_init(void)
+void ICACHE_FLASH_ATTR user_rf_pre_init(void)
 {
 }
 
-void user_init(void)
+void ICACHE_FLASH_ATTR user_init(void)
 {
     char buf[64] = {0};
     at_customLinkMax = 5;
