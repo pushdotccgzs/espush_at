@@ -5,9 +5,14 @@
 #include <at_push.h>
 
 
-void recv_push_msg_cb(uint8* pdata, uint32 len)
+void ICACHE_FLASH_ATTR at_recv_push_msg_cb(uint8* pdata, uint32 len)
 {
 	char buf[16] = { 0 };
+	if(pdata[0] == 'A' && pdata[1] == 'T' && pdata[len-1] == '\r') {
+		//÷¥––AT÷∏¡Ó
+
+		return;
+	}
 	os_sprintf(buf, "\r\n+MSG,%d:", len);
 	uart0_sendStr(buf);
 	uart0_tx_buffer(pdata, len);
@@ -15,7 +20,7 @@ void recv_push_msg_cb(uint8* pdata, uint32 len)
 }
 
 
-void at_queryCmdPushStatus(uint8_t id)
+void ICACHE_FLASH_ATTR at_queryCmdPushStatus(uint8_t id)
 {
 	char buf[8] = { 0 };
 	sint8 status= push_server_connect_status();
@@ -26,7 +31,7 @@ void at_queryCmdPushStatus(uint8_t id)
 }
 
 
-void at_setupCmdPushRegist(uint8_t id, char *pPara)
+void ICACHE_FLASH_ATTR at_setupCmdPushRegist(uint8_t id, char *pPara)
 {
 	char* param = pPara;
 	char* appid = NULL;
@@ -51,13 +56,13 @@ void at_setupCmdPushRegist(uint8_t id, char *pPara)
 	}
 
 	appid_val = atoi(appid);
-	push_register(appid_val, appkey, recv_push_msg_cb);
+	push_register(appid_val, appkey, at_recv_push_msg_cb);
 
 	at_response_ok();
 }
 
 
-void at_setupCmdPushMessage(uint8_t id, char* pPara)
+void ICACHE_FLASH_ATTR at_setupCmdPushMessage(uint8_t id, char* pPara)
 {
 	++pPara;
 
@@ -69,7 +74,7 @@ void at_setupCmdPushMessage(uint8_t id, char* pPara)
 }
 
 
-void at_execUnPushRegist(uint8_t id)
+void ICACHE_FLASH_ATTR at_execUnPushRegist(uint8_t id)
 {
 	push_unregister();
 

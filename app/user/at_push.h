@@ -10,9 +10,9 @@
 
 #include <c_types.h>
 
-void at_queryCmdPushStatus(uint8_t id);
-void at_setupCmdPushRegist(uint8_t id, char *pPara);
+void ICACHE_FLASH_ATTR at_queryCmdPushStatus(uint8_t id);
+void ICACHE_FLASH_ATTR at_setupCmdPushRegist(uint8_t id, char *pPara);
 
-void at_setupCmdPushMessage(uint8_t id, char* pPara);
-void at_execUnPushRegist(uint8_t id);
+void ICACHE_FLASH_ATTR at_setupCmdPushMessage(uint8_t id, char* pPara);
+void ICACHE_FLASH_ATTR at_execUnPushRegist(uint8_t id);
 #endif /* APP_USER_AT_PUSH_H_ */
