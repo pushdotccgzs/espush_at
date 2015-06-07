@@ -4,12 +4,23 @@
 #include "at_custom.h"
 #include <at_push.h>
 
+void showbuf(uint8* buf, uint32 len)
+{
+	int i;
+	for(i=0; i!=len; ++i) {
+		char buf[3];
+		os_sprintf(buf, "%02X ", buf[i]);
+		uart0_sendStr(buf);
+	}
+}
 
 void ICACHE_FLASH_ATTR at_recv_push_msg_cb(uint8* pdata, uint32 len)
 {
 	char buf[16] = { 0 };
-	if(pdata[0] == 'A' && pdata[1] == 'T' && pdata[len-1] == '\r') {
-		//÷¥––AT÷∏¡Ó
+	if(pdata[0] == 'A' && pdata[1] == 'T') {
+		uart0_sendStr("AT CMD \r\n");
+		showbuf(pdata, len);
+		at_cmdProcess(pdata);
 
 		return;
 	}
