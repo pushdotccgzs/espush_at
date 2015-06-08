@@ -16,7 +16,9 @@
 #include "driver/uart.h"
 
 at_funcationType at_custom_cmd[] = {
-	{"+PUSH", 5, NULL, at_queryCmdPushStatus, at_setupCmdPushRegist, NULL},
+	{"+PUSH", 5, NULL, at_queryCmdPushStatus, NULL, NULL},
+	{"+PUSH_DEF", 9, NULL, NULL, at_setupCmdPushRegistDef, NULL},
+	{"+PUSH_CUR", 9, NULL, NULL, at_setupCmdPushRegistCur, NULL},
 	{"+PUSHMSG", 8, NULL, NULL, at_setupCmdPushMessage, NULL},
 	{"+PUSHCLOSE", 10, NULL, NULL, NULL, at_execUnPushRegist},
 };
@@ -34,5 +36,7 @@ void ICACHE_FLASH_ATTR user_init(void)
     at_init();
     at_set_custom_info(ver);
     at_port_print("\r\nready\r\n");
-    at_cmd_array_regist(&at_custom_cmd[0], sizeof(at_custom_cmd)/sizeof(at_custom_cmd[0]));
+    at_cmd_array_regist(&at_custom_cmd[0], sizeof(at_custom_cmd)/sizeof(at_funcationType));
+
+    system_init_done_cb(regist_push_from_read_flash);
 }
