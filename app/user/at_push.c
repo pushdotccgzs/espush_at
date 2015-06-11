@@ -6,6 +6,9 @@
 #include <os_type.h>
 #include <spi_flash.h>
 
+static uint8 suffix_flag = 1;
+
+
 void showbuf(uint8* buf, uint32 len)
 {
 	int i;
@@ -19,17 +22,21 @@ void showbuf(uint8* buf, uint32 len)
 void ICACHE_FLASH_ATTR at_recv_push_msg_cb(uint8* pdata, uint32 len)
 {
 	char buf[16] = { 0 };
-	if(pdata[0] == 'A' && pdata[1] == 'T') {
-		uart0_sendStr("AT CMD \r\n");
-		showbuf(pdata, len);
-		at_cmdProcess(pdata);
-
-		return;
+//	if(pdata[0] == 'A' && pdata[1] == 'T') {
+//		uart0_sendStr("AT CMD \r\n");
+//		showbuf(pdata, len);
+//		at_cmdProcess(pdata);
+//
+//		return;
+//	}
+	if(suffix_flag) {
+		os_sprintf(buf, "\r\n+MSG,%d:", len);
+		uart0_sendStr(buf);
 	}
-	os_sprintf(buf, "\r\n+MSG,%d:", len);
-	uart0_sendStr(buf);
 	uart0_tx_buffer(pdata, len);
-	uart0_sendStr("\r\n");
+	if(suffix_flag) {
+		uart0_sendStr("\r\n");
+	}
 }
 
 
@@ -214,6 +221,14 @@ void ICACHE_FLASH_ATTR at_setupCmdPushMessage(uint8_t id, char* pPara)
 void ICACHE_FLASH_ATTR at_execUnPushRegist(uint8_t id)
 {
 	push_unregister();
+
+	at_response_ok();
+}
+
+
+void ICACHE_FLASH_ATTR at_execPushFlagSwitch(uint8_t id)
+{
+	suffix_flag = !suffix_flag;
 
 	at_response_ok();
 }

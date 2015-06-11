@@ -12,6 +12,7 @@
 
 void ICACHE_FLASH_ATTR at_queryCmdPushStatus(uint8_t id);
 void ICACHE_FLASH_ATTR at_execUnPushRegist(uint8_t id);
+void ICACHE_FLASH_ATTR at_execPushFlagSwitch(uint8_t id);
 
 void ICACHE_FLASH_ATTR at_setupCmdPushMessage(uint8_t id, char* pPara);
 void ICACHE_FLASH_ATTR at_setupCmdPushRegistDef(uint8_t id, char *pPara);
