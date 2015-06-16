@@ -6,6 +6,8 @@
 #include <os_type.h>
 #include <spi_flash.h>
 
+#include "push.h"
+
 static uint8 suffix_flag = 1;
 
 
@@ -76,7 +78,12 @@ void ICACHE_FLASH_ATTR at_setupCmdPushRegistCur(uint8_t id, char *pPara)
 	}
 
 	appid_val = atoi(appid);
-	push_register(appid_val, appkey, at_recv_push_msg_cb);
+	if(appid_val == 0) {
+		at_response_error();
+		return;
+	}
+
+	push_register(appid_val, appkey, "AT_DEV_ANONYMOUS", VER_AT, at_recv_push_msg_cb);
 
 	at_response_ok();
 }
@@ -187,7 +194,7 @@ void ICACHE_FLASH_ATTR at_setupCmdPushRegistDef(uint8_t id, char *pPara)
 
 	appid_val = atoi(appid);
 	save_push_info(appid_val, appkey);
-	push_register(appid_val, appkey, at_recv_push_msg_cb);
+	push_register(appid_val, appkey, "AT_DEV_ANONYMOUS", VER_AT, at_recv_push_msg_cb);
 
 	at_response_ok();
 }
@@ -202,7 +209,7 @@ void ICACHE_FLASH_ATTR regist_push_from_read_flash()
 		return;
 	}
 
-	push_register(info.app_id, info.appkey, at_recv_push_msg_cb);
+	push_register(info.app_id, info.appkey, "AT_DEV_ANONYMOUS", VER_AT, at_recv_push_msg_cb);
 }
 
 
