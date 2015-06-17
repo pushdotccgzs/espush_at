@@ -24,13 +24,6 @@ void showbuf(uint8* buf, uint32 len)
 void ICACHE_FLASH_ATTR at_recv_push_msg_cb(uint8* pdata, uint32 len)
 {
 	char buf[16] = { 0 };
-//	if(pdata[0] == 'A' && pdata[1] == 'T') {
-//		uart0_sendStr("AT CMD \r\n");
-//		showbuf(pdata, len);
-//		at_cmdProcess(pdata);
-//
-//		return;
-//	}
 	if(suffix_flag) {
 		os_sprintf(buf, "\r\n+MSG,%d:", len);
 		uart0_sendStr(buf);
@@ -41,6 +34,18 @@ void ICACHE_FLASH_ATTR at_recv_push_msg_cb(uint8* pdata, uint32 len)
 	}
 }
 
+
+void ICACHE_FLASH_ATTR atcmd_callback(uint8* atcmd, uint32 len)
+{
+	if(atcmd[0] == 'A' && atcmd[1] == 'T') {
+		char cmdbuf[len + 3]; // \r\n\0
+		os_memcpy(cmdbuf, atcmd, len);
+		os_memcpy(cmdbuf + len, "\r\n\0", 3);
+		at_cmdProcess(cmdbuf);
+	} else {
+		uart0_sendStr("ERROR AT CMD\r\n");
+	}
+}
 
 void ICACHE_FLASH_ATTR at_queryCmdPushStatus(uint8_t id)
 {
@@ -77,6 +82,11 @@ void ICACHE_FLASH_ATTR at_setupCmdPushRegistCur(uint8_t id, char *pPara)
 		return;
 	}
 
+	if(os_strlen(appkey) != 32) {
+		at_response_error();
+		return;
+	}
+
 	appid_val = atoi(appid);
 	if(appid_val == 0) {
 		at_response_error();
@@ -84,6 +94,7 @@ void ICACHE_FLASH_ATTR at_setupCmdPushRegistCur(uint8_t id, char *pPara)
 	}
 
 	push_register(appid_val, appkey, "AT_DEV_ANONYMOUS", VER_AT, at_recv_push_msg_cb);
+	espush_atcmd_cb(atcmd_callback);
 
 	at_response_ok();
 }
@@ -160,7 +171,7 @@ bool ICACHE_FLASH_ATTR read_push_info(push_info_s* info)
 	}
 
 	if(!check_push_info_hash(info)) {
-		uart0_sendStr("check hash error\n");
+//		uart0_sendStr("check hash error\n");
 		return false;
 	}
 
@@ -195,6 +206,7 @@ void ICACHE_FLASH_ATTR at_setupCmdPushRegistDef(uint8_t id, char *pPara)
 	appid_val = atoi(appid);
 	save_push_info(appid_val, appkey);
 	push_register(appid_val, appkey, "AT_DEV_ANONYMOUS", VER_AT, at_recv_push_msg_cb);
+	espush_atcmd_cb(atcmd_callback);
 
 	at_response_ok();
 }
@@ -205,11 +217,12 @@ void ICACHE_FLASH_ATTR regist_push_from_read_flash()
 	push_info_s info;
 
 	if(!read_push_info(&info)) {
-		uart0_sendStr("read flash info error\n");
+//		uart0_sendStr("read flash info error\n");
 		return;
 	}
 
 	push_register(info.app_id, info.appkey, "AT_DEV_ANONYMOUS", VER_AT, at_recv_push_msg_cb);
+	espush_atcmd_cb(atcmd_callback);
 }
 
 

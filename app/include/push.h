@@ -21,14 +21,29 @@ enum CONN_STATUS {
 
 
 enum VERTYPE {
-	VER_AT = 0,
-	VER_NODEMCU = 1,
-	VER_SDK = 2,
-	VER_OTHER = 3,
+	VER_UNKNOWN = 0,
+	VER_AT = 1,
+	VER_NODEMCU = 2,
+	VER_SDK = 3,
+	VER_OTHER = 4,
 };
 
-
+/*
+ * 数据回调
+ */
 typedef void(*msg_cb)(uint8* pdata, uint32 len);
+
+/*
+ * AT指令远程执行回调
+ */
+typedef void(*atcmd_cb)(uint8* atcmd, uint32 len);
+void ICACHE_FLASH_ATTR espush_atcmd_cb(atcmd_cb func);
+
+/*
+ * Lua远程执行回调
+ */
+typedef void(*luafile_cb)(uint8* filebuf, uint32 len);
+void ICACHE_FLASH_ATTR espush_luafile_cb(luafile_cb func);
 
 /*
  * 注册到espush平台，appid与appkey为设备分类标识，必填，其中appkey为32字节字符串格式
