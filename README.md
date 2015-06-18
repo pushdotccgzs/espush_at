@@ -1,5 +1,5 @@
 #使用AT固件
-- 注册平台账号，前往[此处](http://211.155.86.145:8000/web/register/)注册账号并登入，点击“[设备类别](http://211.155.86.145:8000/web/apps/)”，并新增一个APP，记录新APP的APPID与APPKEY，稍后使用。
+- 注册平台账号，前往[此处](https://espush.cn/web/register/)注册账号并登入，点击“[设备类别](https://espush.cn/web/apps/)”，并新增一个APP，记录新APP的APPID与APPKEY，稍后使用。
 - 按如下步骤，下载AT固件，自己编译或使用预编译的版本，并刷入板子。固件刷入工具最好使用乐鑫推荐的[Flash Download Tool](http://bbs.espressif.com/viewtopic.php?f=5&t=433)。
 
 ```
@@ -52,7 +52,7 @@ bin/blank.bin	0x7E000
 //收到来自远端的数据。
 +MSG,20:HELLO，FROM PUSHMSG.
 ```
-- 在平台[在线设备](http://211.155.86.145:8000/web/devices/)、[数据推送](http://211.155.86.145:8000/web/pushmsg/)等处，均可向设备发送指令，指令将从串口传出。
+- 在平台[在线设备](https://espush.cn/web/devices/)、[数据推送](https://espush.cn/web/pushmsg/)等处，均可向设备发送指令，指令将从串口传出。
 
 #AT指令说明
 AT-PUSH固件新增了3个命令，以下做简要说明
