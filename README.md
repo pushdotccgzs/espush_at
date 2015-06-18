@@ -13,7 +13,7 @@ bin/eagle.irom0text.bin	0x40000
 bin/blank.bin	0x7E000
 ```
 刷入时截图如下：
-![Alt text](./images/at_flashing.png)
+![Alt text](./docs/images/at_flashing.png)
 
 - 开启调试控制台，默认波特率BIT_RATE_115200，按以下方式输入指令：
 ```
