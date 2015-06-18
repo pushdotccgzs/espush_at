@@ -5,6 +5,8 @@
 #include <at_push.h>
 #include <os_type.h>
 #include <spi_flash.h>
+#include <eagle_soc.h>
+#include <gpio.h>
 
 #include "push.h"
 
@@ -16,9 +18,11 @@ void showbuf(uint8* buf, uint32 len)
 	int i;
 	for(i=0; i!=len; ++i) {
 		char buf[3];
-		os_sprintf(buf, "%02X ", buf[i]);
+		os_sprintf(buf, "%02x ", buf[i]);
 		uart0_sendStr(buf);
 	}
+
+	uart0_sendStr("\r\n");
 }
 
 void ICACHE_FLASH_ATTR at_recv_push_msg_cb(uint8* pdata, uint32 len)
@@ -37,11 +41,10 @@ void ICACHE_FLASH_ATTR at_recv_push_msg_cb(uint8* pdata, uint32 len)
 
 void ICACHE_FLASH_ATTR atcmd_callback(uint8* atcmd, uint32 len)
 {
+	uart0_sendStr((const char*)atcmd);
+
 	if(atcmd[0] == 'A' && atcmd[1] == 'T') {
-		char cmdbuf[len + 3]; // \r\n\0
-		os_memcpy(cmdbuf, atcmd, len);
-		os_memcpy(cmdbuf + len, "\r\n\0", 3);
-		at_cmdProcess(cmdbuf);
+		at_cmdProcess(atcmd+2);
 	} else {
 		uart0_sendStr("ERROR AT CMD\r\n");
 	}
@@ -50,7 +53,7 @@ void ICACHE_FLASH_ATTR atcmd_callback(uint8* atcmd, uint32 len)
 void ICACHE_FLASH_ATTR at_queryCmdPushStatus(uint8_t id)
 {
 	char buf[8] = { 0 };
-	sint8 status= push_server_connect_status();
+	sint8 status= espush_server_connect_status();
 
 	os_sprintf(buf, "%d\n", status);
 	uart0_sendStr(buf);
@@ -93,7 +96,7 @@ void ICACHE_FLASH_ATTR at_setupCmdPushRegistCur(uint8_t id, char *pPara)
 		return;
 	}
 
-	push_register(appid_val, appkey, "AT_DEV_ANONYMOUS", VER_AT, at_recv_push_msg_cb);
+	espush_register(appid_val, appkey, "AT_DEV_ANONYMOUS", VER_AT, at_recv_push_msg_cb);
 	espush_atcmd_cb(atcmd_callback);
 
 	at_response_ok();
@@ -205,7 +208,7 @@ void ICACHE_FLASH_ATTR at_setupCmdPushRegistDef(uint8_t id, char *pPara)
 
 	appid_val = atoi(appid);
 	save_push_info(appid_val, appkey);
-	push_register(appid_val, appkey, "AT_DEV_ANONYMOUS", VER_AT, at_recv_push_msg_cb);
+	espush_register(appid_val, appkey, "AT_DEV_ANONYMOUS", VER_AT, at_recv_push_msg_cb);
 	espush_atcmd_cb(atcmd_callback);
 
 	at_response_ok();
@@ -221,8 +224,81 @@ void ICACHE_FLASH_ATTR regist_push_from_read_flash()
 		return;
 	}
 
-	push_register(info.app_id, info.appkey, "AT_DEV_ANONYMOUS", VER_AT, at_recv_push_msg_cb);
+	espush_register(info.app_id, info.appkey, "AT_DEV_ANONYMOUS", VER_AT, at_recv_push_msg_cb);
 	espush_atcmd_cb(atcmd_callback);
+}
+
+
+typedef struct {
+	uint8 pin;
+	uint8 func_name;
+	uint32 pin_name;
+}gpio_map_s;
+
+gpio_map_s gl_gpio_map[] = {
+		//0 ~ 5
+		{0, FUNC_GPIO0, PERIPHS_IO_MUX_GPIO0_U},
+		{1, FUNC_GPIO1, PERIPHS_IO_MUX_U0TXD_U},	//同是串口tx口
+		{2, FUNC_GPIO2, PERIPHS_IO_MUX_GPIO2_U},
+		{3, FUNC_GPIO3, PERIPHS_IO_MUX_U0RXD_U},	//串口RX口
+		{4, FUNC_GPIO4, PERIPHS_IO_MUX_GPIO4_U},
+		{5, FUNC_GPIO5, PERIPHS_IO_MUX_GPIO5_U},
+		//9 ~ 10
+		{9, FUNC_GPIO9, PERIPHS_IO_MUX_SD_DATA2_U},
+		{10, FUNC_GPIO10, PERIPHS_IO_MUX_SD_DATA3_U},
+		//12~15
+		{12, FUNC_GPIO12, PERIPHS_IO_MUX_MTDI_U},
+		{13, FUNC_GPIO13, PERIPHS_IO_MUX_MTCK_U},
+		{14, FUNC_GPIO14, PERIPHS_IO_MUX_MTMS_U},
+		{15, FUNC_GPIO15, PERIPHS_IO_MUX_MTDO_U},
+};
+
+
+void ICACHE_FLASH_ATTR set_gpio_edge(uint8 pin, uint8 edge)
+{
+	uint8 i;
+	uint8 length = sizeof(gl_gpio_map) / sizeof(gpio_map_s);
+	for(i=0; i != length; ++i) {
+		if(gl_gpio_map[i].pin == pin) {
+			PIN_FUNC_SELECT(gl_gpio_map[i].pin_name, gl_gpio_map[i].func_name);
+			break;
+		}
+	}
+
+//	uart0_sendStr("BEGIN\r\n");
+	GPIO_OUTPUT_SET(GPIO_ID_PIN(pin), edge);
+//	uart0_sendStr("END\r\n");
+}
+
+
+void ICACHE_FLASH_ATTR at_setupGPIOEdgeLow(uint8_t id, char *pPara)
+{
+	uint8 pin = atoi(++pPara);
+	uint8 length = sizeof(gl_gpio_map) / sizeof(gpio_map_s);
+	uint8 max_pin = gl_gpio_map[length - 1].pin;
+	if(pin == 0 || pin > max_pin) {
+		at_response_error();
+		return;
+	}
+
+	set_gpio_edge(pin, 0);
+	at_response_ok();
+}
+
+
+void ICACHE_FLASH_ATTR at_setupGPIOEdgeHigh(uint8_t id, char *pPara)
+{
+//	showbuf(pPara, 10);
+	uint8 pin = atoi(++pPara);
+	uint8 length = sizeof(gl_gpio_map) / sizeof(gpio_map_s);
+	uint8 max_pin = gl_gpio_map[length - 1].pin;
+	if(pin == 0 || pin > max_pin) {
+		at_response_error();
+		return;
+	}
+
+	set_gpio_edge(pin, 1);
+	at_response_ok();
 }
 
 
@@ -230,7 +306,7 @@ void ICACHE_FLASH_ATTR at_setupCmdPushMessage(uint8_t id, char* pPara)
 {
 	++pPara;
 
-	if(push_msg(pPara, strlen(pPara)) == 0) {
+	if(espush_msg(pPara, strlen(pPara)) == 0) {
 		at_response_ok();
 	} else {
 		at_response_error();
@@ -240,7 +316,7 @@ void ICACHE_FLASH_ATTR at_setupCmdPushMessage(uint8_t id, char* pPara)
 
 void ICACHE_FLASH_ATTR at_execUnPushRegist(uint8_t id)
 {
-	push_unregister();
+	espush_unregister();
 
 	at_response_ok();
 }
@@ -256,5 +332,6 @@ void ICACHE_FLASH_ATTR at_execPushFlagSwitch(uint8_t id)
 
 /*
  * TODO:
- * [ ] APPID于APPKEY的值合法性判定
+ * [√] APPID于APPKEY的值合法性判定
+ * [ ] GPIO 控制指令
  */

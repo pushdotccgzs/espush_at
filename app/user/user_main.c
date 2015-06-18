@@ -22,6 +22,8 @@ at_funcationType at_custom_cmd[] = {
 	{"+PUSHMSG", 8, NULL, NULL, at_setupCmdPushMessage, NULL},
 	{"+PUSHCLOSE", 10, NULL, NULL, NULL, at_execUnPushRegist},
 	{"+PUSH_FLAG", 10, NULL, NULL, NULL, at_execPushFlagSwitch},
+	{"+GPIO_HIGH", 10, NULL, NULL,at_setupGPIOEdgeLow, NULL},
+	{"+GPIO_LOW", 9, NULL, NULL,at_setupGPIOEdgeHigh, NULL},
 };
 
 void ICACHE_FLASH_ATTR user_rf_pre_init(void)

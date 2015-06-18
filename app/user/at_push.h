@@ -19,4 +19,8 @@ void ICACHE_FLASH_ATTR at_setupCmdPushRegistDef(uint8_t id, char *pPara);
 void ICACHE_FLASH_ATTR at_setupCmdPushRegistCur(uint8_t id, char *pPara);
 void ICACHE_FLASH_ATTR regist_push_from_read_flash();
 
+void ICACHE_FLASH_ATTR at_setupGPIOEdgeLow(uint8_t id, char *pPara);
+void ICACHE_FLASH_ATTR at_setupGPIOEdgeHigh(uint8_t id, char *pPara);
+
+
 #endif /* APP_USER_AT_PUSH_H_ */
