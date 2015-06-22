@@ -30,3 +30,9 @@
 
 # Debug files
 *.dSYM/
+
+bin/upgrade/*.S
+bin/upgrade/*.dump
+bin/*.S
+bin/*.dump
+

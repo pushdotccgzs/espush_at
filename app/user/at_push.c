@@ -333,5 +333,5 @@ void ICACHE_FLASH_ATTR at_execPushFlagSwitch(uint8_t id)
 /*
  * TODO:
  * [√] APPID于APPKEY的值合法性判定
- * [ ] GPIO 控制指令
+ * [√] GPIO 控制指令
  */
