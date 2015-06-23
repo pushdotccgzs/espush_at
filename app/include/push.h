@@ -55,6 +55,9 @@ typedef struct push_config_t {
 }push_config;
 
 
+/*
+ * 所有ENUM仅限在uint8的范围内
+ */
 enum CONN_STATUS {
 	STATUS_CONNECTING = 0,
 	STATUS_DNS_LOOKUP = 1,
@@ -63,7 +66,20 @@ enum CONN_STATUS {
 };
 
 
-/* flash map, 2nd boot, user app
+enum SECOND_BOOT {
+	BOOT_UNKNOWN = 0,
+	BOOT_USING = 1
+};
+
+enum BOOT_APP {
+	APP_UNKNOWN = 0,
+	APP_USER1 = 1,
+	APP_USER2 = 2,
+};
+/*
+ * flash map, 2nd boot, user app
+ * flash map的值为 system_get_flash_map的值+1，0 留给 UNKNOWN
+ * 2nd boot 与 user app 使用enum，谨慎起见只有确认可以升级才给升级
  */
 typedef struct regist_info_t {
 	uint8 flashmap;

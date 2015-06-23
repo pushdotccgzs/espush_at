@@ -30,8 +30,10 @@
 
 # Debug files
 *.dSYM/
+
 *.S
 *.dump
 *.d
 *.bin_rep
+
 
