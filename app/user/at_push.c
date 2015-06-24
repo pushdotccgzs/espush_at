@@ -44,7 +44,7 @@ void ICACHE_FLASH_ATTR atcmd_callback(uint8* atcmd, uint32 len)
 	uart0_sendStr((const char*)atcmd);
 
 	if(atcmd[0] == 'A' && atcmd[1] == 'T') {
-		at_cmdProcess(atcmd+2);
+		at_cmdProcess(atcmd + 2);
 	} else {
 		uart0_sendStr("ERROR AT CMD\r\n");
 	}
@@ -254,20 +254,19 @@ gpio_map_s gl_gpio_map[] = {
 };
 
 
-void ICACHE_FLASH_ATTR set_gpio_edge(uint8 pin, uint8 edge)
+uint8 ICACHE_FLASH_ATTR set_gpio_edge(uint8 pin, uint8 edge)
 {
 	uint8 i;
 	uint8 length = sizeof(gl_gpio_map) / sizeof(gpio_map_s);
 	for(i=0; i != length; ++i) {
 		if(gl_gpio_map[i].pin == pin) {
 			PIN_FUNC_SELECT(gl_gpio_map[i].pin_name, gl_gpio_map[i].func_name);
-			break;
+			GPIO_OUTPUT_SET(GPIO_ID_PIN(pin), edge);
+			return 0;
 		}
 	}
 
-//	uart0_sendStr("BEGIN\r\n");
-	GPIO_OUTPUT_SET(GPIO_ID_PIN(pin), edge);
-//	uart0_sendStr("END\r\n");
+	return 1;
 }
 
 
@@ -276,29 +275,34 @@ void ICACHE_FLASH_ATTR at_setupGPIOEdgeLow(uint8_t id, char *pPara)
 	uint8 pin = atoi(++pPara);
 	uint8 length = sizeof(gl_gpio_map) / sizeof(gpio_map_s);
 	uint8 max_pin = gl_gpio_map[length - 1].pin;
-	if(pin == 0 || pin > max_pin) {
+	if(pin > max_pin) {
 		at_response_error();
 		return;
 	}
 
-	set_gpio_edge(pin, 0);
-	at_response_ok();
+	if(set_gpio_edge(pin, 0)) {
+		at_response_error();
+	} else {
+		at_response_ok();
+	}
 }
 
 
 void ICACHE_FLASH_ATTR at_setupGPIOEdgeHigh(uint8_t id, char *pPara)
 {
-//	showbuf(pPara, 10);
 	uint8 pin = atoi(++pPara);
 	uint8 length = sizeof(gl_gpio_map) / sizeof(gpio_map_s);
 	uint8 max_pin = gl_gpio_map[length - 1].pin;
-	if(pin == 0 || pin > max_pin) {
+	if(pin > max_pin) {
 		at_response_error();
 		return;
 	}
 
-	set_gpio_edge(pin, 1);
-	at_response_ok();
+	if(set_gpio_edge(pin, 1)) {
+		at_response_error();
+	} else {
+		at_response_ok();
+	}
 }
 
 
