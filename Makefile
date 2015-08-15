@@ -188,7 +188,6 @@ OBINS := $(GEN_BINS:%=$(BINODIR)/%)
 
 CCFLAGS += 			\
 	-g			\
-	-O2			\
 	-Wpointer-arith		\
 	-Wundef			\
 	-Werror			\
@@ -198,12 +197,7 @@ CCFLAGS += 			\
 	-mlongcalls	\
 	-mtext-section-literals \
 	-ffunction-sections \
-	-fdata-sections     \
-	-DBOOT=$(BOOT) \
-	-DAPP=$(APP) \
-	-DSPI_SPEED=$(SPI_SPEED) \
-	-DSPI_MODE=$(SPI_MODE) \
-	-DSPI_SIZE_MAP=$(SPI_SIZE_MAP)
+	-fdata-sections
 #	-Wall			
 
 CFLAGS = $(CCFLAGS) $(DEFINES) $(EXTRA_CCFLAGS) $(INCLUDES)

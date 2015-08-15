@@ -120,5 +120,26 @@ sint8 ICACHE_FLASH_ATTR espush_msg(uint8* buf, uint16 len);
  */
 sint8 ICACHE_FLASH_ATTR espush_server_connect_status();
 
+void ICACHE_FLASH_ATTR espush_network_cfg_by_smartconfig();
+
+void ICACHE_FLASH_ATTR show_systime();
+
+/*
+ * 调试信息开关
+ * 与os_printf唯一的区别在于可以输出时间戳
+ * 输出系统启动时间
+ */
+#define ESP_DEBUG 1
+
+#ifdef ESP_DEBUG
+#define ESP_DBG(fmt, ...) do {	\
+	show_systime();	\
+	os_printf(fmt, ##__VA_ARGS__);	\
+	}while(0)
+
+#else
+#define ESP_DBG
+#endif
+
 
 #endif /* APP_INCLUDE_PUSH_H_ */

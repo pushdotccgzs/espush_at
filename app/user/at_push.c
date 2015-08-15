@@ -334,6 +334,21 @@ void ICACHE_FLASH_ATTR at_execPushFlagSwitch(uint8_t id)
 }
 
 
+void ICACHE_FLASH_ATTR at_exec_NetworkCfgAp(uint8_t id)
+{
+	espush_local_init("ESP_AT", "espush.cn");
+
+	at_response_ok();
+}
+
+
+void ICACHE_FLASH_ATTR at_exec_NetworkCfgTouch(uint8_t id)
+{
+	espush_network_cfg_by_smartconfig();
+
+	at_response_ok();
+}
+
 /*
  * TODO:
  * [√] APPID于APPKEY的值合法性判定
