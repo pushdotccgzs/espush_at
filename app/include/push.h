@@ -42,6 +42,13 @@ void ICACHE_FLASH_ATTR espush_luafile_cb(luafile_cb func);
 
 
 /*
+ * 实时状态获取回调
+ */
+typedef void(*rt_status_cb)(uint32 msgid, char* key, int16_t length);
+void ICACHE_FLASH_ATTR espush_rtstatus_cb(rt_status_cb func);
+void ICACHE_FLASH_ATTR espush_rtstatus_ret_to_gateway(uint32 cur_msgid, const char* buf, uint8_t length);
+
+/*
  * appid 与 appkey为平台申请值
  * devid 为设备唯一标志码，32字节，可使用uuid自动生成
  * 或递增出现，为您业务标志，可使用服务端SDK对单个设备进行唯一定位
