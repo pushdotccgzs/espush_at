@@ -36,7 +36,7 @@ void ICACHE_FLASH_ATTR user_init(void)
 {
 	uart_init(BIT_RATE_115200, BIT_RATE_115200);
 
-    char* ver = "AT-PUSH v0.1";
+    char* ver = "espush.cn " "20150821-master-b288c4c5";
     at_customLinkMax = 5;
     at_init();
     at_set_custom_info(ver);

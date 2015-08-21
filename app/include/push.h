@@ -10,6 +10,8 @@
 
 #include <c_types.h>
 
+#define ESPUSH_VERSION "20150821-master-80bd4f98"
+
 
 /*
  * 客户端能力值，uint8型，不得设置值超过255，否则无效。
@@ -40,6 +42,13 @@ void ICACHE_FLASH_ATTR espush_atcmd_cb(atcmd_cb func);
 typedef void(*luafile_cb)(uint8* filebuf, uint32 len);
 void ICACHE_FLASH_ATTR espush_luafile_cb(luafile_cb func);
 
+
+/*
+ * 实时状态获取回调
+ */
+typedef void(*rt_status_cb)(uint32 msgid, char* key, int16_t length);
+void ICACHE_FLASH_ATTR espush_rtstatus_cb(rt_status_cb func);
+void ICACHE_FLASH_ATTR espush_rtstatus_ret_to_gateway(uint32 cur_msgid, const char* buf, uint8_t length);
 
 /*
  * appid 与 appkey为平台申请值
