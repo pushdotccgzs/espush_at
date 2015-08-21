@@ -10,6 +10,8 @@
 
 #include <c_types.h>
 
+#define ESPUSH_VERSION "20150821-master-80bd4f98"
+
 
 /*
  * 客户端能力值，uint8型，不得设置值超过255，否则无效。
