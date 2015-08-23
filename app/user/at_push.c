@@ -110,7 +110,7 @@ typedef struct {
 } push_info_s;
 
 
-bool ICACHE_FLASH_ATTR check_push_info_hash(push_info_s* info)
+bool ICACHE_FLASH_ATTR check_espush_cfg_hash(push_info_s* info)
 {
 	uint32 hash_val = 0x3c000;
 	uint8 i;
@@ -124,7 +124,7 @@ bool ICACHE_FLASH_ATTR check_push_info_hash(push_info_s* info)
 }
 
 
-void ICACHE_FLASH_ATTR set_push_info_hash(push_info_s* info)
+void ICACHE_FLASH_ATTR set_espush_cfg_hash(push_info_s* info)
 {
 	uint32 hash_val = 0x3c000;
 	uint8 i;
@@ -138,7 +138,7 @@ void ICACHE_FLASH_ATTR set_push_info_hash(push_info_s* info)
 }
 
 
-void ICACHE_FLASH_ATTR save_push_info(uint32 app_id, uint8* appkey)
+void ICACHE_FLASH_ATTR save_espush_cfg(uint32 app_id, uint8* appkey)
 {
 	uint32 addr = 0x3C000;
 	uint16 page_per = 4096;
@@ -152,7 +152,7 @@ void ICACHE_FLASH_ATTR save_push_info(uint32 app_id, uint8* appkey)
 	push_info_s info;
 	info.app_id = app_id;
 	os_memcpy(info.appkey, appkey, os_strlen(appkey));
-	set_push_info_hash(&info);
+	set_espush_cfg_hash(&info);
 
 	result = spi_flash_write(addr, (uint32*)&info, sizeof(info));
 	if(result != SPI_FLASH_RESULT_OK) {
@@ -162,7 +162,7 @@ void ICACHE_FLASH_ATTR save_push_info(uint32 app_id, uint8* appkey)
 }
 
 
-bool ICACHE_FLASH_ATTR read_push_info(push_info_s* info)
+bool ICACHE_FLASH_ATTR read_espush_cfg(push_info_s* info)
 {
 	uint32 addr = 0x3C000;
 	uint16 page_per = 4096;
@@ -173,7 +173,7 @@ bool ICACHE_FLASH_ATTR read_push_info(push_info_s* info)
 		return false;
 	}
 
-	if(!check_push_info_hash(info)) {
+	if(!check_espush_cfg_hash(info)) {
 //		uart0_sendStr("check hash error\n");
 		return false;
 	}
@@ -207,7 +207,7 @@ void ICACHE_FLASH_ATTR at_setupCmdPushRegistDef(uint8_t id, char *pPara)
 	}
 
 	appid_val = atoi(appid);
-	save_push_info(appid_val, appkey);
+	save_espush_cfg(appid_val, appkey);
 	espush_register(appid_val, appkey, "AT_DEV_ANONYMOUS", VER_AT, at_recv_push_msg_cb);
 	espush_atcmd_cb(atcmd_callback);
 
@@ -219,7 +219,7 @@ void ICACHE_FLASH_ATTR regist_push_from_read_flash()
 {
 	push_info_s info;
 
-	if(!read_push_info(&info)) {
+	if(!read_espush_cfg(&info)) {
 //		uart0_sendStr("read flash info error\n");
 		return;
 	}
@@ -252,22 +252,6 @@ gpio_map_s gl_gpio_map[] = {
 		{14, FUNC_GPIO14, PERIPHS_IO_MUX_MTMS_U},
 		{15, FUNC_GPIO15, PERIPHS_IO_MUX_MTDO_U},
 };
-
-
-uint8 ICACHE_FLASH_ATTR set_gpio_edge(uint8 pin, uint8 edge)
-{
-	uint8 i;
-	uint8 length = sizeof(gl_gpio_map) / sizeof(gpio_map_s);
-	for(i=0; i != length; ++i) {
-		if(gl_gpio_map[i].pin == pin) {
-			PIN_FUNC_SELECT(gl_gpio_map[i].pin_name, gl_gpio_map[i].func_name);
-			GPIO_OUTPUT_SET(GPIO_ID_PIN(pin), edge);
-			return 0;
-		}
-	}
-
-	return 1;
-}
 
 
 void ICACHE_FLASH_ATTR at_setupGPIOEdgeLow(uint8_t id, char *pPara)

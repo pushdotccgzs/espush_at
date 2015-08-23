@@ -10,8 +10,7 @@
 
 #include <c_types.h>
 
-#define ESPUSH_VERSION "20150821-master-80bd4f98"
-
+#define ESPUSH_VERSION "20150822-master-80bd4f98"
 
 /*
  * 客户端能力值，uint8型，不得设置值超过255，否则无效。
@@ -62,6 +61,22 @@ typedef struct push_config_t {
 	enum VERTYPE vertype;
 	msg_cb msgcb;
 }push_config;
+
+
+/*
+ * 保存appid、appkey、devid等信息
+ * 因为flash的特性，未读写过的空间里也是有内容的
+ * 所以需要设置一个hash校验
+ * 若校验通过则证明是人工写入的
+ */
+typedef uint32 HASH_CLS;
+typedef struct {
+	uint32 app_id;
+	uint8 appkey[32];
+	char devid[32];
+	HASH_CLS hashval;
+} __attribute__ ((packed)) espush_cfg_s;;
+
 
 
 /*
@@ -132,6 +147,16 @@ sint8 ICACHE_FLASH_ATTR espush_server_connect_status();
 void ICACHE_FLASH_ATTR espush_network_cfg_by_smartconfig();
 
 void ICACHE_FLASH_ATTR show_systime();
+
+/*
+ * 连接后可获得当前时间
+ * 使用unix时间戳表示
+ * 返回0 则代表还未连接
+ * 留意：连上后，再次断开，时间戳会得到保留。
+ */
+uint32 ICACHE_FLASH_ATTR get_timestamp();
+
+uint8 ICACHE_FLASH_ATTR set_gpio_edge(uint8 pin, uint8 edge);
 
 /*
  * 调试信息开关
