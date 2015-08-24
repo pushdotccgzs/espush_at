@@ -23,7 +23,15 @@ enum VERTYPE {
 	VER_OTHER = 4,
 };
 
-
+/*
+ * UUID
+ */
+typedef struct {
+	uint8 _buf[16];
+} UUID;
+void ICACHE_FLASH_ATTR uuid_to_string(UUID* puuid, char buf[32]);
+void ICACHE_FLASH_ATTR create_uuid(UUID* puuid);
+void ICACHE_FLASH_ATTR show_uuid(UUID* puuid);
 /*
  * 数据回调, pdata为网络数据缓冲区，len为数据长度，回调函数在收到网络数据后被异步调用。
  */

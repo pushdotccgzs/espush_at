@@ -110,7 +110,7 @@ typedef struct {
 } push_info_s;
 
 
-bool ICACHE_FLASH_ATTR check_espush_cfg_hash(push_info_s* info)
+static bool ICACHE_FLASH_ATTR check_espush_cfg_hash(push_info_s* info)
 {
 	uint32 hash_val = 0x3c000;
 	uint8 i;
@@ -124,7 +124,7 @@ bool ICACHE_FLASH_ATTR check_espush_cfg_hash(push_info_s* info)
 }
 
 
-void ICACHE_FLASH_ATTR set_espush_cfg_hash(push_info_s* info)
+static void ICACHE_FLASH_ATTR set_espush_cfg_hash(push_info_s* info)
 {
 	uint32 hash_val = 0x3c000;
 	uint8 i;
@@ -138,7 +138,7 @@ void ICACHE_FLASH_ATTR set_espush_cfg_hash(push_info_s* info)
 }
 
 
-void ICACHE_FLASH_ATTR save_espush_cfg(uint32 app_id, uint8* appkey)
+static void ICACHE_FLASH_ATTR save_espush_cfg(uint32 app_id, uint8* appkey)
 {
 	uint32 addr = 0x3C000;
 	uint16 page_per = 4096;
@@ -162,7 +162,7 @@ void ICACHE_FLASH_ATTR save_espush_cfg(uint32 app_id, uint8* appkey)
 }
 
 
-bool ICACHE_FLASH_ATTR read_espush_cfg(push_info_s* info)
+static bool ICACHE_FLASH_ATTR read_espush_cfg(push_info_s* info)
 {
 	uint32 addr = 0x3C000;
 	uint16 page_per = 4096;
@@ -318,9 +318,15 @@ void ICACHE_FLASH_ATTR at_execPushFlagSwitch(uint8_t id)
 }
 
 
+/*
+ * 为什么这里也要设置 atcmd_callback
+ * 为什么这里也需要设置 VERTYPE，这里也需要指定 text message recv callback
+ * 此处也是一个注册入口。
+ */
 void ICACHE_FLASH_ATTR at_exec_NetworkCfgAp(uint8_t id)
 {
-	espush_local_init("ESP_AT", "espush.cn");
+	espush_local_init("ESP_AT", "espush.cn", VER_AT, at_recv_push_msg_cb);
+	espush_atcmd_cb(atcmd_callback);
 
 	at_response_ok();
 }
