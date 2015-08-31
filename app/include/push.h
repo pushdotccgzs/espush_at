@@ -12,6 +12,18 @@
 
 #define ESPUSH_VERSION "20150822-master-80bd4f98"
 
+
+/*
+ * 大小端转换，ESP8266属小端序，协议规定为大端序（主要为方便服务端开发）
+ */
+#define u16_t uint16
+#define u32_t uint32
+#define my_htons(_n)  ((u16_t)((((_n) & 0xff) << 8) | (((_n) >> 8) & 0xff)))
+#define my_ntohs(_n)  ((u16_t)((((_n) & 0xff) << 8) | (((_n) >> 8) & 0xff)))
+#define my_htonl(_n)  ((u32_t)( (((_n) & 0xff) << 24) | (((_n) & 0xff00) << 8) | (((_n) >> 8)  & 0xff00) | (((_n) >> 24) & 0xff) ))
+#define my_ntohl(_n)  ((u32_t)( (((_n) & 0xff) << 24) | (((_n) & 0xff00) << 8) | (((_n) >> 8)  & 0xff00) | (((_n) >> 24) & 0xff) ))
+
+
 /*
  * 客户端能力值，uint8型，不得设置值超过255，否则无效。
  */
@@ -77,11 +89,15 @@ typedef struct push_config_t {
  * 所以需要设置一个hash校验
  * 若校验通过则证明是人工写入的
  */
+#define APPKEY_LENGTH 32
+#define DEVID_LENGTH 32
+#define SSID_MAX_LENGTH 32
+#define SSID_PASSWORD_MAX_LENGTH 64
 typedef uint32 HASH_CLS;
 typedef struct {
 	uint32 app_id;
-	uint8 appkey[32];
-	char devid[32];
+	uint8 appkey[APPKEY_LENGTH];
+	char devid[DEVID_LENGTH];
 	HASH_CLS hashval;
 } __attribute__ ((packed)) espush_cfg_s;;
 

@@ -294,9 +294,13 @@ void ICACHE_FLASH_ATTR at_setupCmdPushMessage(uint8_t id, char* pPara)
 {
 	++pPara;
 
-	if(espush_msg(pPara, strlen(pPara)) == 0) {
+	sint8 iRet = espush_msg(pPara, strlen(pPara));
+
+	if(iRet == 0) {
 		at_response_ok();
-	} else {
+	} else if (iRet == 1) {
+		at_response("CACHED\r\n");
+	} else 	{
 		at_response_error();
 	}
 }
@@ -339,6 +343,13 @@ void ICACHE_FLASH_ATTR at_exec_NetworkCfgTouch(uint8_t id)
 	at_response_ok();
 }
 
+
+void ICACHE_FLASH_ATTR at_exec_ListOfflineMsg(uint8_t id)
+{
+	send_clear_flash_queue();
+
+	at_response_ok();
+}
 /*
  * TODO:
  * [√] APPID于APPKEY的值合法性判定
