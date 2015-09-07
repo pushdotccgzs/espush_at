@@ -27,6 +27,9 @@ at_funcationType at_custom_cmd[] = {
 	{"+N_AP", 5, NULL, NULL, NULL, at_exec_NetworkCfgAp},
 	{"+N_SMC", 6, NULL, NULL, NULL, at_exec_NetworkCfgTouch},
 	{"+OFFLINES", 9, NULL, NULL, NULL, at_exec_ListOfflineMsg},
+	{"+ADCU", 5, NULL, at_query_ADCU, NULL, NULL},
+	{"+HOSTNAME", 9, NULL, NULL, at_setupHostName, NULL},
+	{"+GPIO", 5, NULL, at_query_gpio, NULL, NULL}
 };
 
 void ICACHE_FLASH_ATTR user_rf_pre_init(void)

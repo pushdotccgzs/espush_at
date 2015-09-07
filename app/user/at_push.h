@@ -26,4 +26,13 @@ void ICACHE_FLASH_ATTR at_exec_NetworkCfgAp(uint8_t id);
 void ICACHE_FLASH_ATTR at_exec_NetworkCfgTouch(uint8_t id);
 void ICACHE_FLASH_ATTR at_exec_ListOfflineMsg(uint8_t id);
 
+
+void ICACHE_FLASH_ATTR at_query_ADCU(uint8_t id);
+
+void ICACHE_FLASH_ATTR at_setupHostName(uint8_t id, char* pPara);
+
+void ICACHE_FLASH_ATTR at_query_gpio(uint8_t id);
+
+
+
 #endif /* APP_USER_AT_PUSH_H_ */

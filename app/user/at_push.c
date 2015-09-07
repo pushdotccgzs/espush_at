@@ -350,6 +350,40 @@ void ICACHE_FLASH_ATTR at_exec_ListOfflineMsg(uint8_t id)
 
 	at_response_ok();
 }
+
+
+void ICACHE_FLASH_ATTR at_query_ADCU(uint8_t id)
+{
+	char buf[16] = { 0 };
+	os_sprintf(buf, "%d\r\n", system_adc_read());
+	at_response(buf);
+}
+
+void ICACHE_FLASH_ATTR at_setupHostName(uint8_t id, char* pPara)
+{
+	wifi_station_set_hostname(++pPara);
+
+	at_response_ok();
+}
+
+
+void ICACHE_FLASH_ATTR at_query_gpio(uint8_t id)
+{
+	int i, tmp;
+	uint8 gpios[12 + 1] = { '0' };
+
+	uint32 length = sizeof(gl_gpio_map) / sizeof(gpio_map_s);
+	for(i=0; i!=length; ++i) {
+		tmp = 0x1 & GPIO_INPUT_GET(gl_gpio_map[i].pin);
+		if(tmp) {
+			gpios[i] = '1';
+		}
+	}
+
+	at_response(gpios);
+}
+
+
 /*
  * TODO:
  * [√] APPID于APPKEY的值合法性判定
