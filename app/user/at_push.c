@@ -215,17 +215,18 @@ void ICACHE_FLASH_ATTR at_setupCmdPushRegistDef(uint8_t id, char *pPara)
 }
 
 
-void ICACHE_FLASH_ATTR regist_push_from_read_flash()
+uint8 ICACHE_FLASH_ATTR regist_push_from_read_flash()
 {
 	push_info_s info;
 
 	if(!read_espush_cfg(&info)) {
 //		uart0_sendStr("read flash info error\n");
-		return;
+		return 1;
 	}
 
 	espush_register(info.app_id, info.appkey, "AT_DEV_ANONYMOUS", VER_AT, at_recv_push_msg_cb);
 	espush_atcmd_cb(atcmd_callback);
+	return 0;
 }
 
 
@@ -306,6 +307,17 @@ void ICACHE_FLASH_ATTR at_setupCmdPushMessage(uint8_t id, char* pPara)
 }
 
 
+void ICACHE_FLASH_ATTR at_execPushInitial(uint8_t id)
+{
+	if(regist_push_from_read_flash()) {
+		at_response_error();
+		return;
+	}
+
+	at_response_ok();
+}
+
+
 void ICACHE_FLASH_ATTR at_execUnPushRegist(uint8_t id)
 {
 	espush_unregister();
@@ -357,6 +369,8 @@ void ICACHE_FLASH_ATTR at_query_ADCU(uint8_t id)
 	char buf[16] = { 0 };
 	os_sprintf(buf, "%d\r\n", system_adc_read());
 	at_response(buf);
+
+	at_response_ok();
 }
 
 void ICACHE_FLASH_ATTR at_setupHostName(uint8_t id, char* pPara)
@@ -367,12 +381,25 @@ void ICACHE_FLASH_ATTR at_setupHostName(uint8_t id, char* pPara)
 }
 
 
+void ICACHE_FLASH_ATTR at_queryHostname(uint8_t id)
+{
+	char* hostname = (char*)wifi_station_get_hostname();
+	at_response(hostname);
+
+	at_response_ok();
+}
+
 void ICACHE_FLASH_ATTR at_query_gpio(uint8_t id)
 {
 	int i, tmp;
-	uint8 gpios[12 + 1] = { '0' };
+	uint8 length = sizeof(gl_gpio_map) / sizeof(gpio_map_s);
 
-	uint32 length = sizeof(gl_gpio_map) / sizeof(gpio_map_s);
+	uint8 gpios[length + 1];
+	for(i=0; i!=length; ++i) {
+		gpios[i] = '0';
+	}
+	gpios[length] = 0;
+
 	for(i=0; i!=length; ++i) {
 		tmp = 0x1 & GPIO_INPUT_GET(gl_gpio_map[i].pin);
 		if(tmp) {
@@ -381,11 +408,58 @@ void ICACHE_FLASH_ATTR at_query_gpio(uint8_t id)
 	}
 
 	at_response(gpios);
+	at_response("\r\n");
+
+	at_response_ok();
 }
 
 
-/*
- * TODO:
- * [√] APPID于APPKEY的值合法性判定
- * [√] GPIO 控制指令
- */
+void ICACHE_FLASH_ATTR at_queryInfo(uint8_t id)
+{
+	char out[256] = { 0 };
+	uint8 cpuFreq = system_get_cpu_freq();
+	uint8 flashMap = system_get_flash_size_map();
+	uint8 bootVer = system_get_boot_version();
+	uint8 bootMode = system_get_boot_mode();
+	uint32 chipid = system_get_chip_id();
+	uint32 userbinAddr = system_get_userbin_addr();
+	uint32 flashId = spi_flash_get_id();
+	uint32 sysTime = system_get_time();
+	uint32 rtcTime = system_get_rtc_time();
+	uint32 freeHeap = system_get_free_heap_size();
+
+	system_print_meminfo();
+
+	os_sprintf(out, "CPU freq: [%d]\r\n"
+			"Flash map: [%d]\r\n"
+			"Flash id: [%d]\r\n"
+			"Boot version: [%d]\r\n"
+			"Boot mode: [%d]\r\n"
+			"Chip id: [%d]\r\n"
+			"App current: [%d]\r\n"
+			"Sys time: [%d]\r\n"
+			"Rtc time: [%d]\r\n"
+			"Free memory: [%d]\r\n",
+			cpuFreq, flashMap, flashId,\
+			bootVer, bootMode, chipid,\
+			userbinAddr, sysTime, rtcTime,\
+			freeHeap);
+
+	at_response(out);
+
+	at_response_ok();
+}
+
+
+void ICACHE_FLASH_ATTR at_setupInterval(uint8_t id, char *pPara)
+{
+	uint8 interval = atoi(++pPara);
+	if(interval < 30) {
+		at_response_error();
+		return;
+	}
+
+	espush_set_heartbeat(interval);
+	at_response_ok();
+}
+

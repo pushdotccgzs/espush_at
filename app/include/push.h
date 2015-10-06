@@ -162,6 +162,7 @@ void ICACHE_FLASH_ATTR espush_unregister();
  * 主动的数据推送
  */
 sint8 ICACHE_FLASH_ATTR espush_msg(uint8* buf, uint16 len);
+sint8 ICACHE_FLASH_ATTR espush_msg_plan(uint8* buf, uint16 len, uint32 _timestamp);
 
 /*
  * 或者连接状态, 参考 enum CONN_STATUS 的定义。

@@ -1,14 +1,3 @@
-/******************************************************************************
- * Copyright 2013-2014 Espressif Systems (Wuxi)
- *
- * FileName: user_main.c
- *
- * Description: entry file of user application
- *
- * Modification history:
- *     2015/1/23, v1.0 create this file.
-*******************************************************************************/
-
 #include "osapi.h"
 #include "at_custom.h"
 #include "user_interface.h"
@@ -21,6 +10,7 @@ at_funcationType at_custom_cmd[] = {
 	{"+PUSH_CUR", 9, NULL, NULL, at_setupCmdPushRegistCur, NULL},
 	{"+PUSHMSG", 8, NULL, NULL, at_setupCmdPushMessage, NULL},
 	{"+PUSHCLOSE", 10, NULL, NULL, NULL, at_execUnPushRegist},
+	{"+PUSH_INIT", 10, NULL, NULL, NULL, at_execPushInitial},
 	{"+PUSH_FLAG", 10, NULL, NULL, NULL, at_execPushFlagSwitch},
 	{"+GPIO_HIGH", 10, NULL, NULL,at_setupGPIOEdgeLow, NULL},
 	{"+GPIO_LOW", 9, NULL, NULL,at_setupGPIOEdgeHigh, NULL},
@@ -28,8 +18,11 @@ at_funcationType at_custom_cmd[] = {
 	{"+N_SMC", 6, NULL, NULL, NULL, at_exec_NetworkCfgTouch},
 	{"+OFFLINES", 9, NULL, NULL, NULL, at_exec_ListOfflineMsg},
 	{"+ADCU", 5, NULL, at_query_ADCU, NULL, NULL},
-	{"+HOSTNAME", 9, NULL, NULL, at_setupHostName, NULL},
-	{"+GPIO", 5, NULL, at_query_gpio, NULL, NULL}
+	{"+VDD33U", 7, NULL, at_query_ADCU, NULL, NULL},
+	{"+HOSTNAME", 9, NULL, at_queryHostname, at_setupHostName, NULL},
+	{"+GPIO", 5, NULL, at_query_gpio, NULL, NULL},
+	{"+INFO", 5, NULL, at_queryInfo, NULL, NULL},
+	{"+INTERVAL", 9, NULL, NULL, at_setupInterval, NULL},
 };
 
 void ICACHE_FLASH_ATTR user_rf_pre_init(void)
@@ -47,5 +40,5 @@ void ICACHE_FLASH_ATTR user_init(void)
     at_port_print("\r\nready\r\n");
     at_cmd_array_regist(&at_custom_cmd[0], sizeof(at_custom_cmd)/sizeof(at_funcationType));
 
-    system_init_done_cb(regist_push_from_read_flash);
+    system_init_done_cb((init_done_cb_t)regist_push_from_read_flash);
 }
