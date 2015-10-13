@@ -23,6 +23,7 @@ at_funcationType at_custom_cmd[] = {
 	{"+GPIO", 5, NULL, at_query_gpio, NULL, NULL},
 	{"+INFO", 5, NULL, at_queryInfo, NULL, NULL},
 	{"+INTERVAL", 9, NULL, NULL, at_setupInterval, NULL},
+	{"+UARTRANS", 9, NULL, NULL, NULL, at_exec_UartTrans},
 };
 
 void ICACHE_FLASH_ATTR user_rf_pre_init(void)

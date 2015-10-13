@@ -27,6 +27,8 @@ void ICACHE_FLASH_ATTR at_exec_NetworkCfgTouch(uint8_t id);
 void ICACHE_FLASH_ATTR at_exec_ListOfflineMsg(uint8_t id);
 
 
+void ICACHE_FLASH_ATTR at_exec_UartTrans(uint8_t id);
+
 void ICACHE_FLASH_ATTR at_query_ADCU(uint8_t id);
 
 void ICACHE_FLASH_ATTR at_setupHostName(uint8_t id, char* pPara);

@@ -19,10 +19,10 @@ void showbuf(uint8* buf, uint32 len)
 	for(i=0; i!=len; ++i) {
 		char buf[3];
 		os_sprintf(buf, "%02x ", buf[i]);
-		uart0_sendStr(buf);
+		at_response(buf);
 	}
 
-	uart0_sendStr("\r\n");
+	at_response("\r\n");
 }
 
 void ICACHE_FLASH_ATTR at_recv_push_msg_cb(uint8* pdata, uint32 len)
@@ -30,23 +30,23 @@ void ICACHE_FLASH_ATTR at_recv_push_msg_cb(uint8* pdata, uint32 len)
 	char buf[16] = { 0 };
 	if(suffix_flag) {
 		os_sprintf(buf, "\r\n+MSG,%d:", len);
-		uart0_sendStr(buf);
+		at_response(buf);
 	}
 	uart0_tx_buffer(pdata, len);
 	if(suffix_flag) {
-		uart0_sendStr("\r\n");
+		at_response("\r\n");
 	}
 }
 
 
 void ICACHE_FLASH_ATTR atcmd_callback(uint8* atcmd, uint32 len)
 {
-	uart0_sendStr((const char*)atcmd);
+	at_response((const char*)atcmd);
 
 	if(atcmd[0] == 'A' && atcmd[1] == 'T') {
 		at_cmdProcess(atcmd + 2);
 	} else {
-		uart0_sendStr("ERROR AT CMD\r\n");
+		at_response("ERROR AT CMD\r\n");
 	}
 }
 
@@ -56,7 +56,7 @@ void ICACHE_FLASH_ATTR at_queryCmdPushStatus(uint8_t id)
 	sint8 status= espush_server_connect_status();
 
 	os_sprintf(buf, "%d\n", status);
-	uart0_sendStr(buf);
+	at_response(buf);
 	at_response_ok();
 }
 
@@ -145,7 +145,7 @@ static void ICACHE_FLASH_ATTR save_espush_cfg(uint32 app_id, uint8* appkey)
 
 	SpiFlashOpResult result = spi_flash_erase_sector(addr / page_per);
 	if(result != SPI_FLASH_RESULT_OK) {
-		uart0_sendStr("ERROR erase_sector\n");
+		at_response("ERROR erase_sector\n");
 		return;
 	}
 
@@ -156,7 +156,7 @@ static void ICACHE_FLASH_ATTR save_espush_cfg(uint32 app_id, uint8* appkey)
 
 	result = spi_flash_write(addr, (uint32*)&info, sizeof(info));
 	if(result != SPI_FLASH_RESULT_OK) {
-		uart0_sendStr("ERROR write\n");
+		at_response("ERROR write\n");
 		return;
 	}
 }
@@ -169,12 +169,12 @@ static bool ICACHE_FLASH_ATTR read_espush_cfg(push_info_s* info)
 
 	SpiFlashOpResult result = spi_flash_read(addr, (uint32*)info, sizeof(push_info_s));
 	if(result != SPI_FLASH_RESULT_OK) {
-		uart0_sendStr("ERROR read\n");
+		at_response("ERROR read\n");
 		return false;
 	}
 
 	if(!check_espush_cfg_hash(info)) {
-//		uart0_sendStr("check hash error\n");
+//		at_response("check hash error\n");
 		return false;
 	}
 
@@ -220,7 +220,7 @@ uint8 ICACHE_FLASH_ATTR regist_push_from_read_flash()
 	push_info_s info;
 
 	if(!read_espush_cfg(&info)) {
-//		uart0_sendStr("read flash info error\n");
+//		at_response("read flash info error\n");
 		return 1;
 	}
 
@@ -461,5 +461,34 @@ void ICACHE_FLASH_ATTR at_setupInterval(uint8_t id, char *pPara)
 
 	espush_set_heartbeat(interval);
 	at_response_ok();
+}
+
+
+void at_uart_trans_rx_intr(uint8* data, int32 len)
+{
+	if(espush_server_connect_status() != 2) {
+		at_response("NOT CONNECTED\r\n");
+		at_response_ok();
+
+		return;
+	}
+
+	ESP_DBG("uart recv: [%s], [%d]\n", data, len);
+	if(os_memcmp(data, "+++", 3) == 0) {
+		at_register_uart_rx_intr(NULL);
+		at_response("\r\nOK\r\n");
+	} else {
+		uart_stream(data, len);
+	}
+}
+
+
+/*
+ * ÔÆ¶ËÍ¸´«
+ */
+void ICACHE_FLASH_ATTR at_exec_UartTrans(uint8_t id)
+{
+	at_register_uart_rx_intr(at_uart_trans_rx_intr);
+	at_response(">");
 }
 

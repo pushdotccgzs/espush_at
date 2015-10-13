@@ -39,3 +39,5 @@
 
 bin/_temp_by_dltool/downloadPanel1/eagle.flash.bin_rep
 bin/_temp_by_dltool/downloadPanel1/eagle.flash.bin_rep
+bin/*.bin
+
