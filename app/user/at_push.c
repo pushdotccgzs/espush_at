@@ -373,6 +373,25 @@ void ICACHE_FLASH_ATTR at_query_ADCU(uint8_t id)
 	at_response_ok();
 }
 
+
+void ICACHE_FLASH_ATTR at_query_espush_apps(uint8_t id)
+{
+	ESP_DBG("[%s], [%d]\n", __func__, id);
+
+	if(espush_server_connect_status() == STATUS_CONNECTED) {
+		push_config* pcfg = (push_config*)espush_get_pushcfg();
+		char out[64] = { 0 };
+		os_sprintf(out, "+ID:%d\r\n+KEY:%s\r\n", pcfg->appid, pcfg->appkey);
+		at_response(out);
+		at_response_ok();
+	} else {
+		at_response("NOT CONNECTED\r\n");
+		at_response_ok();
+	}
+
+}
+
+
 void ICACHE_FLASH_ATTR at_setupHostName(uint8_t id, char* pPara)
 {
 	wifi_station_set_hostname(++pPara);
@@ -466,15 +485,8 @@ void ICACHE_FLASH_ATTR at_setupInterval(uint8_t id, char *pPara)
 
 void at_uart_trans_rx_intr(uint8* data, int32 len)
 {
-	if(espush_server_connect_status() != 2) {
-		at_response("NOT CONNECTED\r\n");
-		at_response_ok();
-
-		return;
-	}
-
 	ESP_DBG("uart recv: [%s], [%d]\n", data, len);
-	if(os_memcmp(data, "+++", 3) == 0) {
+	if(len >=3 && os_memcmp(data, "+++", 3) == 0) {
 		at_register_uart_rx_intr(NULL);
 		at_response("\r\nOK\r\n");
 	} else {
@@ -488,7 +500,38 @@ void at_uart_trans_rx_intr(uint8* data, int32 len)
  */
 void ICACHE_FLASH_ATTR at_exec_UartTrans(uint8_t id)
 {
+	if(espush_server_connect_status() != 2) {
+		at_response("NOT CONNECTED\r\n");
+		at_response_ok();
+
+		return;
+	}
+
 	at_register_uart_rx_intr(at_uart_trans_rx_intr);
 	at_response(">");
 }
 
+
+/*
+ * 单设备注册，直接生成DEVID，使用现有的CHIPID注册上去
+ * 服务端返回APPID与APPKEY，需要使用额外的命令将其保存
+ */
+void ICACHE_FLASH_ATTR at_exec_espush_init(uint8_t id)
+{
+
+}
+
+/*
+ * 将当前APPID与APPKEY写入flash
+ */
+void ICACHE_FLASH_ATTR at_exec_espush_save(uint8_t id)
+{
+	if(espush_server_connect_status() == STATUS_CONNECTED) {
+		push_config* pcfg = (push_config*)espush_get_pushcfg();
+		save_espush_cfg(pcfg->appid, pcfg->appkey);
+	} else {
+		at_response("NOT CONNECTED\r\n");
+	}
+
+	at_response_ok();
+}

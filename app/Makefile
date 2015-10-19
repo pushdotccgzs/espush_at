@@ -22,7 +22,8 @@ GEN_IMAGES= eagle.app.v6.out
 GEN_BINS= eagle.app.v6.bin
 SPECIAL_MKTARGETS=$(APP_MKTARGETS)
 SUBDIRS=    \
-	user
+	user	\
+	driver
 ifdef AT_OPEN_SRC
 SUBDIRS +=    \
 	at
@@ -49,7 +50,8 @@ ifeq ($(FLAVOR),release)
 endif
 
 COMPONENTS_eagle.app.v6 = \
-	user/libuser.a
+	user/libuser.a	\
+	driver/libdriver.a
 	
 ifdef AT_OPEN_SRC
 COMPONENTS_eagle.app.v6 += \
