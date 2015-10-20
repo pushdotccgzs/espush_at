@@ -151,7 +151,7 @@ static void ICACHE_FLASH_ATTR save_espush_cfg(uint32 app_id, uint8* appkey)
 
 	push_info_s info;
 	info.app_id = app_id;
-	os_memcpy(info.appkey, appkey, os_strlen(appkey));
+	os_memcpy(info.appkey, appkey, APPKEY_LENGTH);
 	set_espush_cfg_hash(&info);
 
 	result = spi_flash_write(addr, (uint32*)&info, sizeof(info));
@@ -380,8 +380,13 @@ void ICACHE_FLASH_ATTR at_query_espush_apps(uint8_t id)
 
 	if(espush_server_connect_status() == STATUS_CONNECTED) {
 		push_config* pcfg = (push_config*)espush_get_pushcfg();
+
+		char appkey[APPKEY_LENGTH + 1];
+		appkey[APPKEY_LENGTH] = 0;
+		os_memcpy(appkey, pcfg->appkey, APPKEY_LENGTH);
+
 		char out[64] = { 0 };
-		os_sprintf(out, "+ID:%d\r\n+KEY:%s\r\n", pcfg->appid, pcfg->appkey);
+		os_sprintf(out, "+ID:%d\r\n+KEY:%s\r\n", pcfg->appid, appkey);
 		at_response(out);
 		at_response_ok();
 	} else {
@@ -518,7 +523,17 @@ void ICACHE_FLASH_ATTR at_exec_UartTrans(uint8_t id)
  */
 void ICACHE_FLASH_ATTR at_exec_espush_init(uint8_t id)
 {
+	//char* devid, enum VERTYPE type, msg_cb msgcb
+	UUID uuid;
+	uint8 devid[DEVID_LENGTH];
 
+	create_uuid(&uuid);
+	uuid_to_string(&uuid, devid);
+
+	espush_single_device_init(devid, VER_AT, at_recv_push_msg_cb);
+	espush_atcmd_cb(atcmd_callback);
+
+	at_response_ok();
 }
 
 /*

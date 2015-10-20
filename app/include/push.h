@@ -124,6 +124,11 @@ enum BOOT_APP {
 	APP_USER1 = 1,
 	APP_USER2 = 2,
 };
+
+enum ESPUSH_CLOUD_CONN_MODE {
+	CONN_APP = 0,
+	CONN_SINGLE_DEV,
+};
 /*
  * flash map, 2nd boot, user app
  * flash map的值为 system_get_flash_map的值+1，0 留给 UNKNOWN
@@ -145,6 +150,10 @@ typedef struct regist_info_t {
  */
 void ICACHE_FLASH_ATTR espush_register(uint32 appid, char appkey[32], char devid[32], enum VERTYPE type, msg_cb msgcb);
 
+/*
+ * 单设备注册
+ */
+void ICACHE_FLASH_ATTR espush_single_device_init(char* devid, enum VERTYPE type, msg_cb msgcb);
 
 /*
  * 推送的固件注册数据初始化，参考 regist_info_s 的定义。
