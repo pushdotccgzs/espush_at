@@ -26,9 +26,9 @@ at_funcationType at_custom_cmd[] = {
 	{"+INFO", 5, NULL, at_queryInfo, NULL, NULL},
 	{"+INTERVAL", 9, NULL, NULL, at_setupInterval, NULL},
 	{"+UARTRANS", 9, NULL, NULL, NULL, at_exec_UartTrans},
-	{"+ESPUSH_INIT", 12, NULL, NULL, NULL, at_exec_espush_init},
-	{"+ESPUSH_SAVE", 12, NULL, NULL, NULL, at_exec_espush_save},
-	{"+ESPUSH_APPS", 12, NULL, at_query_espush_apps, NULL, NULL},
+	{"+PUSH_CONN", 10, NULL, NULL, NULL, at_exec_espush_init},
+	{"+PUSH_SAVE", 10, NULL, NULL, NULL, at_exec_espush_save},
+	{"+PUSH_APPS", 10, NULL, at_query_espush_apps, NULL, NULL},
 };
 
 void ICACHE_FLASH_ATTR user_rf_pre_init(void)
