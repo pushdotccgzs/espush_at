@@ -19,6 +19,8 @@ void ICACHE_FLASH_ATTR at_setupCmdPushRegistDef(uint8_t id, char *pPara);
 void ICACHE_FLASH_ATTR at_setupCmdPushRegistCur(uint8_t id, char *pPara);
 uint8 ICACHE_FLASH_ATTR regist_push_from_read_flash();
 
+void ICACHE_FLASH_ATTR at_queryServerHost(uint8_t id);
+void ICACHE_FLASH_ATTR at_setupServerHost(uint8_t id, char *pPara);
 void ICACHE_FLASH_ATTR at_setupGPIOEdgeLow(uint8_t id, char *pPara);
 void ICACHE_FLASH_ATTR at_setupGPIOEdgeHigh(uint8_t id, char *pPara);
 

@@ -50,7 +50,7 @@ ifeq ($(FLAVOR),release)
 endif
 
 COMPONENTS_eagle.app.v6 = \
-	user/libuser.a	\
+	user/libuser.a			\
 	driver/libdriver.a
 	
 ifdef AT_OPEN_SRC
@@ -74,11 +74,15 @@ LINKFLAGS_eagle.app.v6 = \
 	-lnet80211	\
 	-llwip	\
 	-lwpa	\
+	-lcrypto	\
 	-lmain	\
 	-ljson	\
 	-lupgrade	\
+	-lssl		\
+	-lwps		\
 	-lsmartconfig	\
-	-lpush \
+	-lairkiss		\
+	-lpush			\
 	$(DEP_LIBS_eagle.app.v6)					
 
 ifndef AT_OPEN_SRC

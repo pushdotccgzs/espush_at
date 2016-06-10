@@ -239,6 +239,7 @@ ifeq ($(APP), 0)
 	@$(OBJDUMP) -x -s $< > ../bin/eagle.dump
 	@$(OBJDUMP) -S $< > ../bin/eagle.S
 else
+	mkdir -p ../bin/upgrade
 	@$(RM) -r ../bin/upgrade/$(BIN_NAME).S ../bin/upgrade/$(BIN_NAME).dump
 	@$(OBJDUMP) -x -s $< > ../bin/upgrade/$(BIN_NAME).dump
 	@$(OBJDUMP) -S $< > ../bin/upgrade/$(BIN_NAME).S
@@ -253,7 +254,7 @@ endif
 	@echo "!!!"
 	
 ifeq ($(app), 0)
-	@python ../tools/gen_appbin.py $< 0 $(mode) $(freqdiv) $(size_map)
+	@python ../tools/gen_appbin.py $< 0 $(mode) $(freqdiv) $(size_map) $(app)
 	@mv eagle.app.flash.bin ../bin/eagle.flash.bin
 	@mv eagle.app.v6.irom0text.bin ../bin/eagle.irom0text.bin
 	@rm eagle.app.v6.*
@@ -263,10 +264,10 @@ ifeq ($(app), 0)
 	@echo "eagle.irom0text.bin---->0x40000"
 else
     ifneq ($(boot), new)
-		@python ../tools/gen_appbin.py $< 1 $(mode) $(freqdiv) $(size_map)
+		@python ../tools/gen_appbin.py $< 1 $(mode) $(freqdiv) $(size_map) $(app)
 		@echo "Support boot_v1.1 and +"
     else
-		@python ../tools/gen_appbin.py $< 2 $(mode) $(freqdiv) $(size_map)
+		@python ../tools/gen_appbin.py $< 2 $(mode) $(freqdiv) $(size_map) $(app)
 
     	ifeq ($(size_map), 6)
 		@echo "Support boot_v1.4 and +"
@@ -373,6 +374,6 @@ $(foreach image,$(GEN_IMAGES),$(eval $(call MakeImage,$(basename $(image)))))
 # Required for each makefile to inherit from the parent
 #
 
-INCLUDES := $(INCLUDES) -I $(PDIR)include -I $(PDIR)include/$(TARGET)
+INCLUDES := $(INCLUDES) -I $(PDIR)include -I $(PDIR)include/$(TARGET) -I $(PDIR)driver_lib/include
 PDIR := ../$(PDIR)
 sinclude $(PDIR)Makefile

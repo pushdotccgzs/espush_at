@@ -32,7 +32,8 @@ void ICACHE_FLASH_ATTR at_recv_push_msg_cb(uint8* pdata, uint32 len)
 		os_sprintf(buf, "\r\n+MSG,%d:", len);
 		at_response(buf);
 	}
-	uart0_tx_buffer(pdata, len);
+	//uart0_tx_buffer(pdata, len);
+    at_response(pdata);
 	if(suffix_flag) {
 		at_response("\r\n");
 	}
@@ -253,6 +254,23 @@ gpio_map_s gl_gpio_map[] = {
 		{14, FUNC_GPIO14, PERIPHS_IO_MUX_MTMS_U},
 		{15, FUNC_GPIO15, PERIPHS_IO_MUX_MTDO_U},
 };
+
+
+void ICACHE_FLASH_ATTR at_setupServerHost(uint8_t id, char *pPara)
+{
+	espush_set_server_host(atoi(++pPara));
+	at_response_ok();
+}
+
+
+void ICACHE_FLASH_ATTR at_queryServerHost(uint8_t id)
+{
+	char outStr[16] = { 0 };
+	os_sprintf(outStr, "%d", espush_get_server_host());
+
+	at_response(outStr);
+	at_response_ok();
+}
 
 
 void ICACHE_FLASH_ATTR at_setupGPIOEdgeLow(uint8_t id, char *pPara)

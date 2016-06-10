@@ -16,12 +16,14 @@
 /*
  * 大小端转换，ESP8266属小端序，协议规定为大端序（主要为方便服务端开发）
  */
-#define u16_t uint16
-#define u32_t uint32
-#define my_htons(_n)  ((u16_t)((((_n) & 0xff) << 8) | (((_n) >> 8) & 0xff)))
-#define my_ntohs(_n)  ((u16_t)((((_n) & 0xff) << 8) | (((_n) >> 8) & 0xff)))
-#define my_htonl(_n)  ((u32_t)( (((_n) & 0xff) << 24) | (((_n) & 0xff00) << 8) | (((_n) >> 8)  & 0xff00) | (((_n) >> 24) & 0xff) ))
-#define my_ntohl(_n)  ((u32_t)( (((_n) & 0xff) << 24) | (((_n) & 0xff00) << 8) | (((_n) >> 8)  & 0xff00) | (((_n) >> 24) & 0xff) ))
+#define my_htons(_n)  ((uint16)((((_n) & 0xff) << 8) | (((_n) >> 8) & 0xff)))
+#define my_ntohs(_n)  ((uint16)((((_n) & 0xff) << 8) | (((_n) >> 8) & 0xff)))
+#define my_htonl(_n)  ((uint32)( (((_n) & 0xff) << 24) | (((_n) & 0xff00) << 8) | (((_n) >> 8)  & 0xff00) | (((_n) >> 24) & 0xff) ))
+#define my_ntohl(_n)  ((uint32)( (((_n) & 0xff) << 24) | (((_n) & 0xff00) << 8) | (((_n) >> 8)  & 0xff00) | (((_n) >> 24) & 0xff) ))
+
+
+#define read_u32(x) my_htonl(x)
+#define read_u16(x) my_htons(x)
 
 
 /*
@@ -68,6 +70,10 @@ void ICACHE_FLASH_ATTR espush_luafile_cb(luafile_cb func);
 typedef void(*rt_status_cb)(uint32 msgid, char* key, int16_t length);
 void ICACHE_FLASH_ATTR espush_rtstatus_cb(rt_status_cb func);
 void ICACHE_FLASH_ATTR espush_rtstatus_ret_to_gateway(uint32 cur_msgid, const char* buf, uint8_t length);
+
+
+typedef void(*custom_msg_cb)(uint32 cur_msgid, uint8 msgtype, uint16 length, uint8* buf);
+void ICACHE_FLASH_ATTR espush_custom_msg_cb(custom_msg_cb func);
 
 /*
  * appid 与 appkey为平台申请值
@@ -181,6 +187,10 @@ sint8 ICACHE_FLASH_ATTR espush_server_connect_status();
 void ICACHE_FLASH_ATTR espush_network_cfg_by_smartconfig();
 
 void ICACHE_FLASH_ATTR show_systime();
+
+void ICACHE_FLASH_ATTR espush_set_server_host(uint32 addr);
+uint32 ICACHE_FLASH_ATTR espush_get_server_host();
+
 
 /*
  * 连接后可获得当前时间

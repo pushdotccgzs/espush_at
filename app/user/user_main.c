@@ -2,7 +2,6 @@
 #include "at_custom.h"
 #include "user_interface.h"
 #include "at_push.h"
-#include "driver/uart.h"
 #include "driver/key.h"
 #include "push.h"
 
@@ -28,6 +27,7 @@ at_funcationType at_custom_cmd[] = {
 	{"+PUSH_CONN", 10, NULL, NULL, NULL, at_exec_espush_init},
 	{"+PUSH_SAVE", 10, NULL, NULL, NULL, at_exec_espush_save},
 	{"+PUSH_APPS", 10, NULL, at_query_espush_apps, NULL, NULL},
+	{"+ESPUSH_TEST", 12, NULL, at_queryServerHost, at_setupServerHost, NULL},
 };
 
 void ICACHE_FLASH_ATTR user_rf_pre_init(void)
@@ -72,7 +72,7 @@ void settings_key_init()
 
 void ICACHE_FLASH_ATTR user_init(void)
 {
-	uart_init(BIT_RATE_115200, BIT_RATE_115200);
+//	uart_init(BIT_RATE_115200, BIT_RATE_115200);
 
     char* ver = "espush.cn ";
     at_customLinkMax = 5;
@@ -81,6 +81,6 @@ void ICACHE_FLASH_ATTR user_init(void)
     at_port_print("\r\nready\r\n");
     at_cmd_array_regist(&at_custom_cmd[0], sizeof(at_custom_cmd)/sizeof(at_funcationType));
 
-    settings_key_init();
+//    settings_key_init();
     system_init_done_cb((init_done_cb_t)regist_push_from_read_flash);
 }
