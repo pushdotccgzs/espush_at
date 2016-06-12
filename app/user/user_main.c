@@ -3,7 +3,7 @@
 #include "user_interface.h"
 #include "at_push.h"
 #include "driver/key.h"
-#include "push.h"
+#include "espush.h"
 
 at_funcationType at_custom_cmd[] = {
 	{"+PUSH", 5, NULL, at_queryCmdPushStatus, NULL, NULL},
@@ -15,7 +15,6 @@ at_funcationType at_custom_cmd[] = {
 	{"+PUSH_FLAG", 10, NULL, NULL, NULL, at_execPushFlagSwitch},
 	{"+GPIO_HIGH", 10, NULL, NULL,at_setupGPIOEdgeLow, NULL},
 	{"+GPIO_LOW", 9, NULL, NULL,at_setupGPIOEdgeHigh, NULL},
-	{"+N_AP", 5, NULL, NULL, NULL, at_exec_NetworkCfgAp},
 	{"+N_SMC", 6, NULL, NULL, NULL, at_exec_NetworkCfgTouch},
 	{"+OFFLINES", 9, NULL, NULL, NULL, at_exec_ListOfflineMsg},
 	{"+ADCU", 5, NULL, at_query_ADCU, NULL, NULL},

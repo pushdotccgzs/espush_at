@@ -35,6 +35,7 @@ enum VERTYPE {
 	VER_NODEMCU = 2,
 	VER_SDK = 3,
 	VER_OTHER = 4,
+	VER_AT_PLUS = 5,
 };
 
 /*

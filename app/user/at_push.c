@@ -8,7 +8,7 @@
 #include <eagle_soc.h>
 #include <gpio.h>
 
-#include "push.h"
+#include "espush.h"
 
 static uint8 suffix_flag = 1;
 
@@ -347,20 +347,6 @@ void ICACHE_FLASH_ATTR at_execUnPushRegist(uint8_t id)
 void ICACHE_FLASH_ATTR at_execPushFlagSwitch(uint8_t id)
 {
 	suffix_flag = !suffix_flag;
-
-	at_response_ok();
-}
-
-
-/*
- * 为什么这里也要设置 atcmd_callback
- * 为什么这里也需要设置 VERTYPE，这里也需要指定 text message recv callback
- * 此处也是一个注册入口。
- */
-void ICACHE_FLASH_ATTR at_exec_NetworkCfgAp(uint8_t id)
-{
-	espush_local_init("ESP_AT", "espush.cn", VER_AT, at_recv_push_msg_cb);
-	espush_atcmd_cb(atcmd_callback);
 
 	at_response_ok();
 }

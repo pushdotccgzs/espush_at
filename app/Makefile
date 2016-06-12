@@ -82,7 +82,7 @@ LINKFLAGS_eagle.app.v6 = \
 	-lwps		\
 	-lsmartconfig	\
 	-lairkiss		\
-	-lpush			\
+	-lespush			\
 	$(DEP_LIBS_eagle.app.v6)					
 
 ifndef AT_OPEN_SRC
