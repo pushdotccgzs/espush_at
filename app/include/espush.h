@@ -25,6 +25,8 @@
 #define read_u32(x) my_htonl(x)
 #define read_u16(x) my_htons(x)
 
+#define write_u32(x) my_ntohl(x)
+#define write_u16(x) my_ntohs(x)
 
 /*
  * 客户端能力值，uint8型，不得设置值超过255，否则无效。
@@ -71,7 +73,7 @@ void ICACHE_FLASH_ATTR espush_luafile_cb(luafile_cb func);
 typedef void(*rt_status_cb)(uint32 msgid, char* key, int16_t length);
 void ICACHE_FLASH_ATTR espush_rtstatus_cb(rt_status_cb func);
 void ICACHE_FLASH_ATTR espush_rtstatus_ret_to_gateway(uint32 cur_msgid, const char* buf, uint8_t length);
-
+void ICACHE_FLASH_ATTR espush_return_to_gateway(uint16 msgtype, uint32 cur_msgid, uint8 opr_type, const char* buf, uint8_t length);
 
 typedef void(*custom_msg_cb)(uint32 cur_msgid, uint8 msgtype, uint16 length, uint8* buf);
 void ICACHE_FLASH_ATTR espush_custom_msg_cb(custom_msg_cb func);
@@ -156,7 +158,7 @@ typedef struct regist_info_t {
  * msgcb参数为收到数据的回调。
  */
 void ICACHE_FLASH_ATTR espush_register(uint32 appid, char appkey[32], char devid[32], enum VERTYPE type, msg_cb msgcb);
-
+void ICACHE_FLASH_ATTR begin_espush_connect();
 /*
  * 单设备注册
  */
@@ -185,13 +187,24 @@ sint8 ICACHE_FLASH_ATTR espush_msg_plan(uint8* buf, uint16 len, uint32 _timestam
  */
 sint8 ICACHE_FLASH_ATTR espush_server_connect_status();
 
+
+//smartconfig 回调
+typedef void(*smartconfig_succ_cb)();
 void ICACHE_FLASH_ATTR espush_network_cfg_by_smartconfig();
+void ICACHE_FLASH_ATTR espush_network_cfg_by_smartconfig_with_callback(smartconfig_succ_cb fn);
+
+void ICACHE_FLASH_ATTR uart_stream(uint8* pdata, uint32 len);
 
 void ICACHE_FLASH_ATTR show_systime();
 
 void ICACHE_FLASH_ATTR espush_set_server_host(uint32 addr);
 uint32 ICACHE_FLASH_ATTR espush_get_server_host();
 
+
+//save espush config
+void ICACHE_FLASH_ATTR save_espush_cfg(uint32 app_id, uint8* appkey, uint8* devid);
+bool ICACHE_FLASH_ATTR read_espush_cfg(espush_cfg_s* info);
+push_config* ICACHE_FLASH_ATTR espush_get_pushcfg();
 
 /*
  * 连接后可获得当前时间
@@ -202,6 +215,7 @@ uint32 ICACHE_FLASH_ATTR espush_get_server_host();
 uint32 ICACHE_FLASH_ATTR get_timestamp();
 
 uint8 ICACHE_FLASH_ATTR set_gpio_edge(uint8 pin, uint8 edge);
+void ICACHE_FLASH_ATTR get_gpio_edge_to_buf(uint8 buf[12]);
 
 /*
  * 调试信息开关

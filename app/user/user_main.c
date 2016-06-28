@@ -29,50 +29,15 @@ at_funcationType at_custom_cmd[] = {
 	{"+ESPUSH_TEST", 12, NULL, at_queryServerHost, at_setupServerHost, NULL},
 };
 
+
 void ICACHE_FLASH_ATTR user_rf_pre_init(void)
 {
 }
 
 
-LOCAL void ICACHE_FLASH_ATTR settings_btn_long_press(void)
-{
-	ESP_DBG("long btn\n");
-	at_response_ok();
-	espush_network_cfg_by_smartconfig();
-}
-
-
-LOCAL void ICACHE_FLASH_ATTR settings_btn_short_press(void)
-{
-	ESP_DBG("short btn\n");
-	at_response_ok();
-}
-
-
-LOCAL void ICACHE_FLASH_ATTR local_settings_btn_long_press(void)
-{
-	ESP_DBG("long btn\n");
-	at_response_ok();
-	//espush_local_init("iEspush", "12345678", VER_AT, NULL);
-}
-
-
-void settings_key_init()
-{
-	static struct keys_param keys;
-	static struct single_key_param *keys_param[2];
-	keys_param[0] = key_init_single(4, PERIPHS_IO_MUX_GPIO4_U, FUNC_GPIO4, local_settings_btn_long_press, settings_btn_short_press);
-	keys_param[1] = key_init_single(5, PERIPHS_IO_MUX_GPIO5_U, FUNC_GPIO5, settings_btn_long_press, settings_btn_short_press);
-    keys.key_num = 2;
-    keys.single_key = keys_param;
-    key_init(&keys);
-}
-
 
 void ICACHE_FLASH_ATTR user_init(void)
 {
-//	uart_init(BIT_RATE_115200, BIT_RATE_115200);
-
     char* ver = "espush.cn ";
     at_customLinkMax = 5;
     at_init();
@@ -80,6 +45,5 @@ void ICACHE_FLASH_ATTR user_init(void)
     at_port_print("\r\nready\r\n");
     at_cmd_array_regist(&at_custom_cmd[0], sizeof(at_custom_cmd)/sizeof(at_funcationType));
 
-//    settings_key_init();
     system_init_done_cb((init_done_cb_t)regist_push_from_read_flash);
 }

@@ -33,8 +33,13 @@ void ICACHE_FLASH_ATTR at_recv_push_msg_cb(uint8* pdata, uint32 len)
 		at_response(buf);
 	}
 	//uart0_tx_buffer(pdata, len);
+
+	uint8_t tmp = pdata[len];
+	pdata[len] = 0;
     at_response(pdata);
-	if(suffix_flag) {
+    pdata[len] = tmp;
+
+    if(suffix_flag) {
 		at_response("\r\n");
 	}
 }
@@ -104,85 +109,6 @@ void ICACHE_FLASH_ATTR at_setupCmdPushRegistCur(uint8_t id, char *pPara)
 }
 
 
-typedef struct {
-	uint32 app_id;
-	uint8 appkey[32];
-	uint32 hashval;
-} push_info_s;
-
-
-static bool ICACHE_FLASH_ATTR check_espush_cfg_hash(push_info_s* info)
-{
-	uint32 hash_val = 0x3c000;
-	uint8 i;
-
-	uint16 length = 36;
-	for(i=0; i!=length; ++i) {
-		hash_val += ((uint8*)info)[i];
-	}
-
-	return hash_val == info->hashval;
-}
-
-
-static void ICACHE_FLASH_ATTR set_espush_cfg_hash(push_info_s* info)
-{
-	uint32 hash_val = 0x3c000;
-	uint8 i;
-
-	uint16 length = 36;
-	for(i=0; i!=length; ++i) {
-		hash_val += ((uint8*)info)[i];
-	}
-
-	info->hashval = hash_val;
-}
-
-
-static void ICACHE_FLASH_ATTR save_espush_cfg(uint32 app_id, uint8* appkey)
-{
-	uint32 addr = 0x3C000;
-	uint16 page_per = 4096;
-
-	SpiFlashOpResult result = spi_flash_erase_sector(addr / page_per);
-	if(result != SPI_FLASH_RESULT_OK) {
-		at_response("ERROR erase_sector\n");
-		return;
-	}
-
-	push_info_s info;
-	info.app_id = app_id;
-	os_memcpy(info.appkey, appkey, APPKEY_LENGTH);
-	set_espush_cfg_hash(&info);
-
-	result = spi_flash_write(addr, (uint32*)&info, sizeof(info));
-	if(result != SPI_FLASH_RESULT_OK) {
-		at_response("ERROR write\n");
-		return;
-	}
-}
-
-
-static bool ICACHE_FLASH_ATTR read_espush_cfg(push_info_s* info)
-{
-	uint32 addr = 0x3C000;
-	uint16 page_per = 4096;
-
-	SpiFlashOpResult result = spi_flash_read(addr, (uint32*)info, sizeof(push_info_s));
-	if(result != SPI_FLASH_RESULT_OK) {
-		at_response("ERROR read\n");
-		return false;
-	}
-
-	if(!check_espush_cfg_hash(info)) {
-//		at_response("check hash error\n");
-		return false;
-	}
-
-	return true;
-}
-
-
 void ICACHE_FLASH_ATTR at_setupCmdPushRegistDef(uint8_t id, char *pPara)
 {
 	char* param = pPara;
@@ -208,7 +134,7 @@ void ICACHE_FLASH_ATTR at_setupCmdPushRegistDef(uint8_t id, char *pPara)
 	}
 
 	appid_val = atoi(appid);
-	save_espush_cfg(appid_val, appkey);
+	save_espush_cfg(appid_val, appkey, "AT_DEV_ANONYMOUS");
 	espush_register(appid_val, appkey, "AT_DEV_ANONYMOUS", VER_AT, at_recv_push_msg_cb);
 	espush_atcmd_cb(atcmd_callback);
 
@@ -218,10 +144,10 @@ void ICACHE_FLASH_ATTR at_setupCmdPushRegistDef(uint8_t id, char *pPara)
 
 uint8 ICACHE_FLASH_ATTR regist_push_from_read_flash()
 {
-	push_info_s info;
+	espush_cfg_s info;
 
 	if(!read_espush_cfg(&info)) {
-//		at_response("read flash info error\n");
+		at_response("INVALID CONFIG\r\n");
 		return 1;
 	}
 
@@ -547,7 +473,7 @@ void ICACHE_FLASH_ATTR at_exec_espush_save(uint8_t id)
 {
 	if(espush_server_connect_status() == STATUS_CONNECTED) {
 		push_config* pcfg = (push_config*)espush_get_pushcfg();
-		save_espush_cfg(pcfg->appid, pcfg->appkey);
+		save_espush_cfg(pcfg->appid, pcfg->appkey, "AT_PLUS SINGLE DEVICES");
 	} else {
 		at_response("NOT CONNECTED\r\n");
 	}
