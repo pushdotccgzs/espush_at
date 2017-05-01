@@ -45,5 +45,6 @@ void ICACHE_FLASH_ATTR at_queryHostname(uint8_t id);
 void ICACHE_FLASH_ATTR at_setupInterval(uint8_t id, char *pPara);
 void ICACHE_FLASH_ATTR at_execPushInitial(uint8_t id);
 
+void ICACHE_FLASH_ATTR atcmd_callback(uint8* atcmd, uint32 len);
 
 #endif /* APP_USER_AT_PUSH_H_ */

@@ -35,6 +35,15 @@ void ICACHE_FLASH_ATTR user_rf_pre_init(void)
 }
 
 
+void ICACHE_FLASH_ATTR espush_at_init(void)
+{
+	//串口透传回调直接输出在UART0上
+	espush_uart_stream_cb((uart_stream_cb)at_port_print);
+	//AT指令回调
+	espush_atcmd_cb(atcmd_callback);
+	//从flash读取appid等，连接到平台
+	regist_push_from_read_flash();
+}
 
 void ICACHE_FLASH_ATTR user_init(void)
 {
@@ -45,5 +54,5 @@ void ICACHE_FLASH_ATTR user_init(void)
     at_port_print("\r\nready\r\n");
     at_cmd_array_regist(&at_custom_cmd[0], sizeof(at_custom_cmd)/sizeof(at_funcationType));
 
-    system_init_done_cb((init_done_cb_t)regist_push_from_read_flash);
+    system_init_done_cb(espush_at_init);
 }

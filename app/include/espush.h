@@ -10,9 +10,6 @@
 
 #include <c_types.h>
 
-#define ESPUSH_VERSION "20150822-master-80bd4f98"
-
-
 /*
  * 大小端转换，ESP8266属小端序，协议规定为大端序（主要为方便服务端开发）
  */
@@ -30,6 +27,7 @@
 
 /*
  * 客户端能力值，uint8型，不得设置值超过255，否则无效。
+ * 建议使用下表常量值，可使用VER_UNKNOWN
  */
 enum VERTYPE {
 	VER_UNKNOWN = 0,
@@ -49,8 +47,11 @@ typedef struct {
 void ICACHE_FLASH_ATTR uuid_to_string(UUID* puuid, char buf[32]);
 void ICACHE_FLASH_ATTR create_uuid(UUID* puuid);
 void ICACHE_FLASH_ATTR show_uuid(UUID* puuid);
+
 /*
  * 数据回调, pdata为网络数据缓冲区，len为数据长度，回调函数在收到网络数据后被异步调用。
+ * 目前平台只有在推送文本数据或二进制数据时，此回调才有可能被调用；
+ * 远端指令推送不会调用此回调；
  */
 typedef void(*msg_cb)(uint8* pdata, uint32 len);
 
@@ -68,20 +69,42 @@ void ICACHE_FLASH_ATTR espush_luafile_cb(luafile_cb func);
 
 
 /*
+ * 串口透传
+ * */
+typedef void(*uart_stream_cb)(char* streamIn);
+void ICACHE_FLASH_ATTR espush_uart_stream_cb(uart_stream_cb func);
+
+
+/*
+ * 连接成功、断开或失败时的回调函数
+ * */
+enum ESPUSH_CONNECT_EVENT {
+	CONNECTED_CB = 0,
+	DISCONNECTED_CB
+};
+typedef void(*espush_connect_event_cb)(enum ESPUSH_CONNECT_EVENT);
+void ICACHE_FLASH_ATTR espush_set_connect_event_cb(espush_connect_event_cb cbfunc);
+/*
  * 实时状态获取回调
+ * 使用 espush_rtstatus_cb 注册一个 实时状态回调
+ * 云端调用对应API时，回调被调用，在回调函数末尾，必须调用 espush_rtstatus_ret_to_gateway 进行返回
+ * espush_rtstatus_ret_to_gateway 函数的取值 cur_msgid为 回调函数对应参数；
+ * buf与length为 回调结果，返回后云端API接口会得到对应值；
  */
 typedef void(*rt_status_cb)(uint32 msgid, char* key, int16_t length);
 void ICACHE_FLASH_ATTR espush_rtstatus_cb(rt_status_cb func);
 void ICACHE_FLASH_ATTR espush_rtstatus_ret_to_gateway(uint32 cur_msgid, const char* buf, uint8_t length);
 void ICACHE_FLASH_ATTR espush_return_to_gateway(uint16 msgtype, uint32 cur_msgid, uint8 opr_type, const char* buf, uint8_t length);
 
+/*
+ * 自定义指令类型与回调函数，暂时为内部使用，无需调用。
+ * */
 typedef void(*custom_msg_cb)(uint32 cur_msgid, uint8 msgtype, uint16 length, uint8* buf);
 void ICACHE_FLASH_ATTR espush_custom_msg_cb(custom_msg_cb func);
 
 /*
  * appid 与 appkey为平台申请值
- * devid 为设备唯一标志码，32字节，可使用uuid自动生成
- * 或递增出现，为您业务标志，可使用服务端SDK对单个设备进行唯一定位
+ * devid 为设备唯一标志码，32字节，可使用uuid自动生成，平台暂未使用。
  */
 typedef struct push_config_t {
 	uint32 appid;
@@ -113,7 +136,7 @@ typedef struct {
 
 
 /*
- * 所有ENUM仅限在uint8的范围内
+ * 平台连接状态，所有ENUM仅限在uint8的范围内
  */
 enum CONN_STATUS {
 	STATUS_CONNECTING = 0,
@@ -201,7 +224,7 @@ void ICACHE_FLASH_ATTR espush_set_server_host(uint32 addr);
 uint32 ICACHE_FLASH_ATTR espush_get_server_host();
 
 
-//save espush config
+//保存espush的配置，APP_ID与  APPKEY
 void ICACHE_FLASH_ATTR save_espush_cfg(uint32 app_id, uint8* appkey, uint8* devid);
 bool ICACHE_FLASH_ATTR read_espush_cfg(espush_cfg_s* info);
 push_config* ICACHE_FLASH_ATTR espush_get_pushcfg();
@@ -216,15 +239,18 @@ uint32 ICACHE_FLASH_ATTR get_timestamp();
 
 uint8 ICACHE_FLASH_ATTR set_gpio_edge(uint8 pin, uint8 edge);
 void ICACHE_FLASH_ATTR get_gpio_edge_to_buf(uint8 buf[12]);
+void ICACHE_FLASH_ATTR espush_set_heartbeat(int heart_sec);
 
+//CRC32
+uint32 ICACHE_FLASH_ATTR ef_calc_crc32(uint32 crc, const void *buf, size_t size);
 /*
  * 调试信息开关
  * 与os_printf唯一的区别在于可以输出时间戳
  * 输出系统启动时间
  */
-#define ESP_DEBUG 1
+#define ESP_DEBUG 0
 
-#ifdef ESP_DEBUG
+#if ESP_DEBUG
 #define ESP_DBG(fmt, ...) do {	\
 	show_systime();	\
 	os_printf(fmt, ##__VA_ARGS__);	\
@@ -234,5 +260,18 @@ void ICACHE_FLASH_ATTR get_gpio_edge_to_buf(uint8 buf[12]);
 #define ESP_DBG
 #endif
 
+//基于AT固件的调试输出，只有128字节缓存；
+#define AT_DBG(fmt, ...) do {	\
+		static char __debug_str__[128] = { 0 }; 	\
+		os_sprintf(__debug_str__, fmt, ##__VA_ARGS__);	\
+		at_response(__debug_str__);	\
+	} while(0)
+
+//NodeMCU Lua debug.
+#define LUA_DBG(fmt, ...) do {	\
+		static char __debug_str__[128] = { 0 }; 	\
+		os_sprintf(__debug_str__, fmt, ##__VA_ARGS__);	\
+		uart0_sendStr(__debug_str__);	\
+	} while(0)
 
 #endif /* APP_INCLUDE_PUSH_H_ */
